@@ -1,0 +1,46 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+*.env
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and local debug
+*.log
+*.sqlite3
+*.db
+*.bak
+
+# IDEs
+.vscode/
+.idea/
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Dist
+build/
+dist/
+*.egg-info/
+
+# Jupyter notebooks (si aplicara)
+.ipynb_checkpoints/
+
+# Pre-commit hooks cache
+.pre-commit-config.yaml
+.pre-commit/

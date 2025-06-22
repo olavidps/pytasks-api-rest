@@ -1,0 +1,46 @@
+# Default docker-compose file that extends from dev configuration
+version: '3.8'
+
+name: pytasks-prod
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pytasks-postgres-prod
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=pytasks
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pytasks-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/pytasks
+      - ENVIRONMENT=prod
+      - DEBUG=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+
+include:
+  - docker-compose.dev.yml
