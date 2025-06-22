@@ -1,7 +1,7 @@
 [flake8]
 max-line-length = 88
 max-complexity = 10
-extend-ignore = 
+extend-ignore =
     # E203: whitespace before ':' (conflicts with black)
     E203,
     # W503: line break before binary operator (conflicts with black)
@@ -10,7 +10,7 @@ extend-ignore =
     E501
     # Disable docstring in __init__ method
     D107
-exclude = 
+exclude =
     .venv,
     __pycache__,
     __init__.py,

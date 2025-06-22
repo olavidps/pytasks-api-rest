@@ -41,6 +41,5 @@ dist/
 # Jupyter notebooks (si aplicara)
 .ipynb_checkpoints/
 
-# Pre-commit hooks cache
-.pre-commit-config.yaml
+# Pre-commit hooks cacheå
 .pre-commit/
