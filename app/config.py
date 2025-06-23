@@ -1,38 +1,69 @@
 """Configuration settings for the application."""
 
-from pydantic import Field
+import os
+from functools import lru_cache
+
+from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings
 
 
-class Settings(BaseSettings):
-    """Application settings."""
+class BaseConfig(BaseSettings):
+    """Base application configuration."""
 
-    # API settings
-    API_V1_STR: str = "/api/v1"
+    ENV: str = Field(..., validation_alias="ENVIRONMENT")
+    DEBUG: bool = True
     PROJECT_NAME: str = "PyTasks API"
+    API_V1_STR: str = "/api/v1"
 
-    # Environment
-    ENV: str = Field(default="dev", env="ENVIRONMENT")
-    DEBUG: bool = Field(default=True, env="DEBUG")
-
-    # Database
-    DATABASE_URL: str = Field(
-        default="postgresql://postgres:postgres@localhost:5432/pytasks",
-        env="DATABASE_URL",
-        description="PostgreSQL connection string",
-    )
-
-    # Security
     SECRET_KEY: str = Field(
-        default="development_secret_key_change_in_production", env="SECRET_KEY"
+        default="development_secret_key_change_in_production",
+    )
+    DATABASE_URL: PostgresDsn
+
+    class Config:
+        """Configuration settings for the application."""
+
+        env_file = ".env"
+        case_sensitive = True
+        extra = "ignore"
+
+
+class DevelopmentConfig(BaseConfig):
+    """Development configuration."""
+
+    DEBUG: bool = True
+
+
+class ProductionConfig(BaseConfig):
+    """Production configuration."""
+
+    DEBUG: bool = False
+    SECRET_KEY: str = Field(
+        ..., validation_alias="SECRET_KEY"
+    )  # Enforce secret key in prod
+
+
+class TestingConfig(BaseConfig):
+    """Testing configuration."""
+
+    DEBUG: bool = True
+    DATABASE_URL: PostgresDsn = Field(
+        default="postgresql://postgres:postgres@localhost:5432/pytasks_test",
+        validation_alias="TEST_DATABASE_URL",
     )
 
-    model_config = {
-        "env_file": ".env",
-        "case_sensitive": True,
-        "extra": "ignore",  # This allows extra environment variables to be ignored
+
+@lru_cache()
+def get_settings() -> BaseConfig:
+    """Get the correct settings based on the environment."""
+    env = os.getenv("ENVIRONMENT", "dev").lower()
+    config_map = {
+        "dev": DevelopmentConfig,
+        "prod": ProductionConfig,
+        "test": TestingConfig,
     }
+    config_class = config_map.get(env, DevelopmentConfig)
+    return config_class()
 
 
-# Create settings instance
-settings = Settings()
+settings = get_settings()

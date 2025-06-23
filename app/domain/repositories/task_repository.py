@@ -64,7 +64,7 @@ class TaskRepository(ABC):
         status: Optional[TaskStatus] = None,
         priority: Optional[TaskPriority] = None,
         limit: int = 100,
-        offset: int = 0,
+        skip: int = 0,
     ) -> List[Task]:
         """Get tasks by task list id with optional filters.
 
@@ -73,7 +73,7 @@ class TaskRepository(ABC):
             status: Optional filter by task status
             priority: Optional filter by task priority
             limit: Maximum number of tasks to return
-            offset: Number of tasks to skip for pagination
+            skip: Number of tasks to skip for pagination
 
         Returns:
             List of tasks matching the criteria
@@ -85,7 +85,7 @@ class TaskRepository(ABC):
         user_id: UUID,
         status: Optional[TaskStatus] = None,
         limit: int = 100,
-        offset: int = 0,
+        skip: int = 0,
     ) -> List[Task]:
         """Get tasks assigned to a user.
 
@@ -93,7 +93,7 @@ class TaskRepository(ABC):
             user_id: ID of the user tasks are assigned to
             status: Optional filter by task status
             limit: Maximum number of tasks to return
-            offset: Number of tasks to skip for pagination
+            skip: Number of tasks to skip for pagination
 
         Returns:
             List of tasks assigned to the user

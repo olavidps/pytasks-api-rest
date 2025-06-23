@@ -59,13 +59,15 @@ class TaskListRepository(ABC):
 
     @abstractmethod
     async def get_by_owner_id(
-        self, owner_id: UUID, is_active: bool = True
+        self, owner_id: UUID, is_active: bool = True, skip: int = 0, limit: int = 100
     ) -> List[TaskList]:
         """Get task lists by owner id.
 
         Args:
             owner_id: ID of the user who owns the task lists
             is_active: Filter by active/inactive status
+            skip: Number of task lists to skip for pagination
+            limit: Maximum number of task lists to return
 
         Returns:
             List of task lists owned by the user

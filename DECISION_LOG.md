@@ -76,3 +76,36 @@ Models, exceptions, and repositories were added. Basic CRUD methods were impleme
 Business logic was placed inside the models. Clear method names like `mark_as_completed()` were used to make the code easy to understand. Properties were added to represent states such as `is_completed` and `is_overdue`.
 
 These choices helped keep the code clean and maintainable.
+
+## 5. Testing Infrastructure
+
+### Database Isolation Strategy
+
+**Problem**: Integration tests were failing due to data persistence between tests, causing `UserAlreadyExistsError` and other conflicts.
+
+**Solution**: Implemented comprehensive test isolation using:
+- `isolated_db_session` fixture with transaction rollback
+- Proper async session management with SQLAlchemy
+- Automatic cleanup without data persistence
+
+### Pre-commit Integration
+
+**Decision**: Integrate full database lifecycle into pre-commit hooks
+- Automatic test database startup via docker-compose
+- Database migrations before test execution
+- Complete test suite execution on every commit
+- Automatic cleanup of test containers
+
+**Reason**: Ensures all commits are tested against a real database, preventing integration issues in CI/CD.
+
+## 6. Development Workflow
+
+### Makefile Commands
+
+**Decision**: Centralize all development commands in Makefile
+- Consistent command interface across team
+- Simplified database management
+- Integrated testing workflows
+- Docker container lifecycle management
+
+**Commands implemented**: install, dev, format, lint, check, test variants, database management

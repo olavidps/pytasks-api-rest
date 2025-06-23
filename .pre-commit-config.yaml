@@ -35,7 +35,21 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: poetry run pytest
+        entry: |
+          bash -c '
+          echo "🧹 Cleaning up any existing test containers..." &&
+          docker-compose -f docker-compose.test.yml down -v 2>/dev/null || true &&
+          echo "🐳 Starting test database..." &&
+          docker-compose -f docker-compose.test.yml up -d --wait &&
+          echo "⏳ Waiting for database to be ready..." &&
+          sleep 5 &&
+          echo "🔄 Running database migrations..." &&
+          ENVIRONMENT=test poetry run alembic upgrade head &&
+          echo "🧪 Running tests..." &&
+          ENVIRONMENT=test poetry run pytest &&
+          echo "🧹 Cleaning up test containers..." &&
+          docker-compose -f docker-compose.test.yml down -v
+          '
         language: system
         types: [python]
         pass_filenames: false

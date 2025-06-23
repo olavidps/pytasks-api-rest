@@ -33,21 +33,116 @@ check: ## Check code (CI-friendly, no changes)
 	@echo "✅ All checks passed!"
 
 # === Testing ===
-test: ## Run tests
-	poetry run pytest -v
+test: ## Run all tests (unit + integration) with database lifecycle
+	@echo "Running all tests (unit + integration)..."
+	@echo "First running unit tests (no database)..."
+	poetry run pytest tests/unit/ -v --no-cov
+	@echo "Now running integration tests (with database)..."
+	@echo "🧹 Cleaning up any existing test containers..."
+	docker-compose -f docker-compose.test.yml down -v 2>/dev/null || true
+	@echo "🐳 Starting test database..."
+	docker-compose -f docker-compose.test.yml up -d --wait
+	@echo "⏳ Waiting for database to be ready..."
+	@sleep 5
+	@echo "🔄 Running database migrations..."
+	ENVIRONMENT=test poetry run alembic upgrade head
+	@echo "🧪 Running all tests with test database..."
+	ENVIRONMENT=test poetry run pytest tests/ -v
+	@echo "🧹 Cleaning up test containers..."
+	docker-compose -f docker-compose.test.yml down -v
 
-test-cov: ## Run tests with coverage
-	poetry run pytest --cov=app --cov-report=html --cov-report=term-missing
+test-unit: ## Run unit tests only (no database required)
+	@echo "Running unit tests (no database)..."
+	poetry run pytest tests/unit/ -v --no-cov
+
+test-integration: ## Run integration tests with database lifecycle
+	@echo "Running integration tests (with database)..."
+	@echo "🧹 Cleaning up any existing test containers..."
+	docker-compose -f docker-compose.test.yml down -v 2>/dev/null || true
+	@echo "🐳 Starting test database..."
+	docker-compose -f docker-compose.test.yml up -d --wait
+	@echo "⏳ Waiting for database to be ready..."
+	@sleep 5
+	@echo "🔄 Running database migrations..."
+	ENVIRONMENT=test poetry run alembic upgrade head
+	@echo "🧪 Running integration tests..."
+	ENVIRONMENT=test poetry run pytest tests/integration/ -v
+	@echo "🧹 Cleaning up test containers..."
+	docker-compose -f docker-compose.test.yml down -v
+
+test-cov: ## Run tests with coverage report
+	@echo "🧹 Cleaning up any existing test containers..."
+	docker-compose -f docker-compose.test.yml down -v 2>/dev/null || true
+	@echo "🐳 Starting test database..."
+	docker-compose -f docker-compose.test.yml up -d --wait
+	@echo "⏳ Waiting for database to be ready..."
+	@sleep 5
+	@echo "🔄 Running database migrations..."
+	ENVIRONMENT=test poetry run alembic upgrade head
+	@echo "🧪 Running tests with coverage..."
+	ENVIRONMENT=test poetry run pytest --cov=app --cov-report=html --cov-report=term-missing
+	@echo "🧹 Cleaning up test containers..."
+	docker-compose -f docker-compose.test.yml down -v
+
+test-watch: ## Run tests in watch mode
+	docker-compose -f docker-compose.test.yml up -d
+	poetry run pytest-watch -- tests/ -v
+
+test-db:
+	@echo "Starting test database..."
+	docker-compose -f docker-compose.test.yml up -d
+	@echo "Waiting for database to be ready..."
+	@sleep 5
+	@echo "Running database migrations..."
+	DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pytasks_test poetry run alembic upgrade head
+	@echo "Test database ready at localhost:5432"
+
+test-db-stop: ## Stop test database
+	@echo "Stopping test database..."
+	docker-compose -f docker-compose.test.yml down
+
+# Database migrations
+migrate:
+	@echo "Running database migrations..."
+	poetry run alembic upgrade head
+
+migration:
+	@echo "Creating new migration..."
+	@read -p "Migration name: " name; \
+	poetry run alembic revision --autogenerate -m "$$name"
+
+migration-history:
+	@echo "Migration history:"
+	poetry run alembic history
+
+migration-current:
+	@echo "Current migration:"
+	poetry run alembic current
 
 # === Docker ===
 docker-dev: ## Start PostgreSQL for development
 	docker-compose up -d
+
+docker-test: ## Start PostgreSQL for testing
+	@echo "🐳 Starting test database..."
+	docker-compose -f docker-compose.test.yml up -d
+	@echo "⏳ Waiting for test database to be ready..."
+	@sleep 5
+
+docker-test-down: ## Stop test containers
+	@echo "🐳 Stopping test database..."
+	docker-compose -f docker-compose.test.yml down -v
 
 docker-prod: ## Start production environment
 	docker-compose -f docker-compose.prod.yml up --build
 
 docker-down: ## Stop all containers
 	docker-compose down -v
+
+docker-down-all: ## Stop all containers (dev, test, prod)
+	docker-compose down -v
+	docker-compose -f docker-compose.test.yml down -v
+	docker-compose -f docker-compose.prod.yml down -v
 	docker-compose -f docker-compose.prod.yml down -v
 
 # === Utilities ===
