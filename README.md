@@ -162,11 +162,13 @@ DomainException
 The infrastructure layer implements the repository pattern using SQLAlchemy ORM:
 
 **Database Models:**
+
 - `UserModel`: User entity with email/username uniqueness constraints
 - `TaskListModel`: Task list entity with foreign key to user (owner)
 - `TaskModel`: Task entity with foreign keys to task list and optional assignee
 
 **Key Features:**
+
 - PostgreSQL database with proper relationships and constraints
 - Repository pattern implementation for clean separation of concerns
 - Async SQLAlchemy for high-performance database operations
@@ -282,7 +284,7 @@ make migration-current
 
 ```bash
 # Complete setup with Docker
-make setup-test-db
+make test-db
 
 # Only create test database
 python scripts/setup_test_db.py
@@ -294,11 +296,13 @@ python scripts/setup_test_db.py
 
 ```bash
 # Development
-make install          # Install dependencies
+make install          # Install dependencies and setup pre-commit hooks
 make dev             # Start development server
 make format          # Format code with black and isort
 make lint            # Run linting with flake8
-make check           # Run all quality checks
+make check           # Run all quality checks (CI-friendly)
+make clean           # Clean temporary files
+make update          # Update dependencies
 
 # Testing
 make test            # Run all tests with database setup
@@ -310,13 +314,24 @@ make test-watch      # Watch mode for continuous testing
 # Database
 make migrate         # Run database migrations
 make migration       # Create new migration
+make migration-history # Show migration history
+make migration-current # Show current migration
+make test-db         # Start test database
+make test-db-stop    # Stop test database
+
+# Docker
 make docker-dev      # Start development database
 make docker-test     # Start test database
+make docker-test-down # Stop test containers
+make docker-prod     # Start production environment
+make docker-down     # Stop all containers
+make docker-down-all # Stop all containers (dev, test, prod)
 ```
 
 ### Pre-commit Integration
 
 The project includes automated pre-commit hooks that:
+
 - Start test database automatically
 - Run database migrations
 - Execute all tests
@@ -342,7 +357,7 @@ make install
 make dev
 
 # Update dependencies
-make update-deps
+make update
 ```
 
 ### Code Quality
@@ -354,9 +369,6 @@ make format
 # Check code quality issues (doesn't modify)
 make lint
 
-# Fix ALL issues (format + unused imports)
-make fix
-
 # Verify everything is correct (CI-friendly)
 make check
 ```
@@ -365,13 +377,11 @@ make check
 
 ```bash
 # 1. Write code
-# 2. Fix all issues before committing
-make fix
-
-# 3. Verify everything is good
+# 2. Format and check code
+make format
 make check
 
-# 4. Run tests
+# 3. Run tests
 make test
 ```
 
@@ -397,7 +407,9 @@ make test-watch
 ```
 
 **Test Structure:**
+
 - **Unit Tests** (`tests/unit/`): Fast tests that don't require a database
+
   - Domain model tests (User, Task, TaskList)
   - Business logic validation
   - No external dependencies
@@ -408,6 +420,7 @@ make test-watch
   - Full application workflows
 
 **Key Features:**
+
 - **Automatic Setup**: Integration tests handle all database setup and teardown
 - **Test Isolation**: Each integration test run uses a fresh database instance
 - **Fast Unit Tests**: Unit tests run without database overhead
@@ -453,17 +466,17 @@ make docker-down
 
 ### Essential Commands
 
-| Command            | Description                                     |
-| ------------------ | ----------------------------------------------- |
-| `make install`     | Install dependencies and setup hooks            |
-| `make dev`         | Run development server                          |
-| `make test`        | Run all tests (full lifecycle)                 |
-| `make test-cov`    | Run tests with coverage report                  |
-| `make test-unit`   | Run unit tests only                            |
-| `make fix`         | Fix all code issues (format + imports)         |
-| `make check`       | Verify code quality (CI-friendly)              |
-| `make docker-dev`  | Start PostgreSQL in Docker                     |
-| `make docker-down` | Stop all Docker containers                      |
+| Command            | Description                          |
+| ------------------ | ------------------------------------ |
+| `make install`     | Install dependencies and setup hooks |
+| `make dev`         | Run development server               |
+| `make test`        | Run all tests (full lifecycle)       |
+| `make test-cov`    | Run tests with coverage report       |
+| `make test-unit`   | Run unit tests only                  |
+| `make format`      | Format code with black and isort     |
+| `make check`       | Verify code quality (CI-friendly)    |
+| `make docker-dev`  | Start PostgreSQL in Docker           |
+| `make docker-down` | Stop all Docker containers           |
 
 ## 📁 Project Structure
 
