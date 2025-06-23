@@ -141,9 +141,12 @@ async def get_user(
             detail=str(e),
         ) from e
     except Exception as e:
+        import traceback
+
+        error_details = f"Failed to retrieve user: {str(e)} - {traceback.format_exc()}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve user",
+            detail=error_details,
         ) from e
 
 
