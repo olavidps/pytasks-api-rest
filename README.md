@@ -55,8 +55,6 @@ A clean and modern task management API built with FastAPI, following clean archi
 
 #### Domain Model Details
 
-![Domain Model](assets/domain.svg)
-
 ```mermaid
 classDiagram
     class Task {
