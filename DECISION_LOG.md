@@ -66,3 +66,13 @@ This file tracks key decisions made during development.
 - Health check endpoint for API status monitoring
 - Added API versioning with /api/v1 prefix
 - Set up OpenAPI documentation (Swagger UI and ReDoc)
+
+## 4. Domain Layer Implementation
+
+### Repository Pattern
+
+Models, exceptions, and repositories were added. Basic CRUD methods were implemented to handle data operations. Filtering and pagination were included to support project needs.
+
+Business logic was placed inside the models. Clear method names like `mark_as_completed()` were used to make the code easy to understand. Properties were added to represent states such as `is_completed` and `is_overdue`.
+
+These choices helped keep the code clean and maintainable.

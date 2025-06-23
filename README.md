@@ -48,10 +48,112 @@ A clean and modern task management API built with FastAPI, following clean archi
 - [x] Initial API design
 - [x] FastAPI project setup
 
-### Phase 2: Core Domain
-- [ ] Domain models (Task, TaskList, User)
-- [ ] Custom exceptions and validations
-- [ ] Repository interfaces
+### Phase 2: Core Domain ✅
+- [x] Domain models (Task, TaskList, User)
+- [x] Custom exceptions and validations
+- [x] Repository interfaces
+
+#### Domain Model Details
+
+![Domain Model](assets/domain.svg)
+
+```mermaid
+classDiagram
+    class Task {
+        +UUID id
+        +String title
+        +String description
+        +TaskStatus status
+        +TaskPriority priority
+        +UUID task_list_id
+        +UUID assigned_user_id
+        +DateTime created_at
+        +DateTime updated_at
+        +DateTime due_date
+        +DateTime completed_at
+        +mark_as_in_progress()
+        +mark_as_completed()
+        +mark_as_pending()
+        +change_priority(priority)
+        +assign_to_user(user_id)
+        +update_details(title, description, due_date)
+        +is_completed()
+        +is_overdue()
+    }
+
+    class TaskList {
+        +UUID id
+        +String name
+        +String description
+        +UUID owner_id
+        +DateTime created_at
+        +DateTime updated_at
+        +Boolean is_active
+        +update_details(name, description)
+        +deactivate()
+        +activate()
+    }
+
+    class User {
+        +UUID id
+        +String email
+        +String username
+        +String full_name
+        +Boolean is_active
+        +DateTime created_at
+        +DateTime updated_at
+        +DateTime last_login
+        +update_profile(username, full_name, email)
+        +deactivate()
+        +activate()
+        +record_login()
+    }
+
+    class TaskStatus {
+        <<enumeration>>
+        PENDING
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    class TaskPriority {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+        CRITICAL
+    }
+
+    Task --> TaskStatus
+    Task --> TaskPriority
+    Task "*" --> "1" TaskList: belongs to
+    Task "*" --> "0..1" User: assigned to
+    TaskList "*" --> "1" User: owned by
+```
+
+#### Exception Hierarchy
+
+```
+DomainException
+├── ValidationError
+├── NotFoundError
+│   ├── TaskNotFoundError
+│   ├── TaskListNotFoundError
+│   └── UserNotFoundError
+├── AlreadyExistsError
+│   ├── TaskListAlreadyExistsError
+│   └── UserAlreadyExistsError
+├── BusinessRuleViolationError
+└── UnauthorizedOperationError
+```
+
+#### Key Domain Concepts
+
+- **Immutable Entities**: All domain entities are immutable, using Pydantic v2's frozen models
+- **Rich Domain Model**: Business logic encapsulated in entity methods rather than anemic models
+- **Method-Based State Changes**: All state changes happen through explicit methods like `mark_as_completed()`
+- **Type Safety**: Strong typing throughout with validation via Pydantic
+- **Clear Repository Interfaces**: Abstract base classes define contracts for data access
 
 ### Phase 3: Infrastructure
 - [ ] Database setup (SQLAlchemy + PostgreSQL)
