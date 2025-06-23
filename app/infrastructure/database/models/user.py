@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, DateTime, String, func
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -20,7 +20,9 @@ class UserModel(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, index=True)
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, index=True, default=uuid4
+    )
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(100))

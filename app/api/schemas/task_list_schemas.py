@@ -1,7 +1,7 @@
 """TaskList API schemas for requests and responses."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -81,7 +81,5 @@ class TaskListSummary(BaseModel):
         from_attributes = True
 
 
-class PaginatedTaskListResponse(PaginatedResponse):
-    """Paginated response for task lists."""
-
-    items: List[TaskListResponse] = Field(..., description="Task list items")
+# Type alias for paginated task list response
+PaginatedTaskListResponse = PaginatedResponse[TaskListResponse]

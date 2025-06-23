@@ -88,7 +88,7 @@ test-watch: ## Run tests in watch mode
 	docker-compose -f docker-compose.test.yml up -d
 	poetry run pytest-watch -- tests/ -v
 
-test-db:
+test-db-up:
 	@echo "Starting test database..."
 	docker-compose -f docker-compose.test.yml up -d
 	@echo "Waiting for database to be ready..."
@@ -97,9 +97,9 @@ test-db:
 	DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pytasks_test poetry run alembic upgrade head
 	@echo "Test database ready at localhost:5432"
 
-test-db-stop: ## Stop test database
+test-db-down: ## Stop test database
 	@echo "Stopping test database..."
-	docker-compose -f docker-compose.test.yml down
+	docker-compose -f docker-compose.test.yml down -v
 
 # Database migrations
 migrate:

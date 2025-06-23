@@ -1,6 +1,4 @@
-"""Test data factory for creating test entities."""
-
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4
 
@@ -9,11 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.models.task import Task, TaskPriority, TaskStatus
 from app.domain.models.task_list import TaskList
 from app.domain.models.user import User
-from app.infrastructure.repositories.task_list_repository_impl import (
-    TaskListRepositoryImpl,
-)
-from app.infrastructure.repositories.task_repository_impl import TaskRepositoryImpl
-from app.infrastructure.repositories.user_repository_impl import UserRepositoryImpl
 
 
 class DataFactory:
@@ -21,9 +14,6 @@ class DataFactory:
 
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.user_repo = UserRepositoryImpl(session)
-        self.task_list_repo = TaskListRepositoryImpl(session)
-        self.task_repo = TaskRepositoryImpl(session)
 
     async def create_user(
         self,
@@ -32,9 +22,7 @@ class DataFactory:
         full_name: Optional[str] = None,
         is_active: bool = True,
     ) -> User:
-        """Create a test user."""
         user_id = uuid4()
-        # Always generate unique identifiers to avoid conflicts
         unique_suffix = user_id.hex[:12]
         email = email or f"user_{unique_suffix}@example.com"
         username = username or f"user_{unique_suffix}"
@@ -46,10 +34,13 @@ class DataFactory:
             username=username,
             full_name=full_name,
             is_active=is_active,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
-        return await self.user_repo.create(user)
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
 
     async def create_task_list(
         self,
@@ -58,7 +49,6 @@ class DataFactory:
         description: Optional[str] = None,
         is_active: bool = True,
     ) -> TaskList:
-        """Create a test task list."""
         task_list_id = uuid4()
         name = name or f"Test Task List {task_list_id.hex[:8]}"
         description = description or f"Task list for testing {task_list_id.hex[:8]}"
@@ -69,10 +59,13 @@ class DataFactory:
             description=description,
             owner_id=owner.id,
             is_active=is_active,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
-        return await self.task_list_repo.create(task_list)
+        self.session.add(task_list)
+        await self.session.commit()
+        await self.session.refresh(task_list)
+        return task_list
 
     async def create_task(
         self,
@@ -81,8 +74,9 @@ class DataFactory:
         description: Optional[str] = None,
         status: TaskStatus = TaskStatus.PENDING,
         priority: TaskPriority = TaskPriority.MEDIUM,
+        assigned_user: Optional[User] = None,
+        due_date: Optional[datetime] = None,
     ) -> Task:
-        """Create a test task."""
         task_id = uuid4()
         title = title or f"Test Task {task_id.hex[:8]}"
         description = description or f"Task for testing {task_id.hex[:8]}"
@@ -94,13 +88,17 @@ class DataFactory:
             status=status,
             priority=priority,
             task_list_id=task_list.id,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            assigned_user_id=assigned_user.id if assigned_user else None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            due_date=due_date,
         )
-        return await self.task_repo.create(task)
+        self.session.add(task)
+        await self.session.commit()
+        await self.session.refresh(task)
+        return task
 
     async def create_multiple_users(self, count: int = 5) -> List[User]:
-        """Create multiple test users."""
         users = []
         for i in range(count):
             user = await self.create_user(
@@ -112,7 +110,6 @@ class DataFactory:
     async def create_multiple_tasks(
         self, task_list: TaskList, count: int = 10
     ) -> List[Task]:
-        """Create multiple test tasks."""
         tasks = []
         statuses = [TaskStatus.PENDING, TaskStatus.IN_PROGRESS, TaskStatus.COMPLETED]
         priorities = [TaskPriority.LOW, TaskPriority.MEDIUM, TaskPriority.HIGH]

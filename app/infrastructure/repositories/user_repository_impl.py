@@ -1,9 +1,9 @@
 """User repository implementation."""
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.exceptions.user import UserAlreadyExistsError, UserNotFoundError
@@ -56,13 +56,10 @@ class UserRepositoryImpl(UserRepository):
             username=user.username,
             full_name=user.full_name,
             is_active=user.is_active,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-            last_login=user.last_login,
         )
 
         self.session.add(user_model)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(user_model)
 
         return self._to_domain(user_model)
@@ -82,7 +79,7 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            return None
+            raise UserNotFoundError(user_id)
 
         return self._to_domain(user_model)
 
@@ -152,7 +149,7 @@ class UserRepositoryImpl(UserRepository):
         user_model.updated_at = user.updated_at
         user_model.last_login = user.last_login
 
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(user_model)
 
         return self._to_domain(user_model)
@@ -172,10 +169,10 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            return False
+            raise UserNotFoundError(user_id)
 
         await self.session.delete(user_model)
-        await self.session.commit()
+        await self.session.flush()
         return True
 
     async def list_all(self, skip: int = 0, limit: int = 100) -> List[User]:
@@ -259,6 +256,57 @@ class UserRepositoryImpl(UserRepository):
             select(UserModel.id).where(UserModel.username == username)
         )
         return result.scalar_one_or_none() is not None
+
+    async def get_paginated(
+        self, offset: int = 0, limit: int = 20, filters: Optional[Dict] = None
+    ) -> tuple[List[User], int]:
+        """Get paginated users with optional filtering.
+
+        Args:
+            offset: Number of users to skip
+            limit: Maximum number of users to return
+            filters: Optional dictionary of filters (search, is_active)
+
+        Returns:
+            Tuple of (users list, total count)
+        """
+        # Build base query
+        query = select(UserModel)
+        count_query = select(func.count(UserModel.id))
+
+        # Apply filters if provided
+        if filters:
+            # Filter by active status
+            if "is_active" in filters and filters["is_active"] is not None:
+                query = query.where(UserModel.is_active == filters["is_active"])
+                count_query = count_query.where(
+                    UserModel.is_active == filters["is_active"]
+                )
+
+            # Filter by search term (search in username, email, or full_name)
+            if "search" in filters and filters["search"]:
+                search_term = f"%{filters['search']}%"
+                search_condition = or_(
+                    UserModel.username.ilike(search_term),
+                    UserModel.email.ilike(search_term),
+                    UserModel.full_name.ilike(search_term),
+                )
+                query = query.where(search_condition)
+                count_query = count_query.where(search_condition)
+
+        # Get total count
+        total_result = await self.session.execute(count_query)
+        total = total_result.scalar()
+
+        # Apply pagination and get results
+        query = query.offset(offset).limit(limit)
+        result = await self.session.execute(query)
+        user_models = result.scalars().all()
+
+        # Convert to domain entities
+        users = [self._to_domain(user_model) for user_model in user_models]
+
+        return users, total
 
     def _to_domain(self, user_model: UserModel) -> User:
         """Convert SQLAlchemy model to domain entity.

@@ -1,7 +1,7 @@
 """Task API schemas for requests and responses."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -118,19 +118,16 @@ class TaskFilterParams(BaseModel):
     priority: Optional[TaskPriority] = Field(
         None, description="Filter by task priority"
     )
-    assigned_user_id: Optional[UUID] = Field(
-        None, description="Filter by assigned user"
-    )
+    assigned_to_id: Optional[UUID] = Field(None, description="Filter by assigned user")
     task_list_id: Optional[UUID] = Field(None, description="Filter by task list")
     search: Optional[str] = Field(None, description="Search in title and description")
-    overdue_only: Optional[bool] = Field(None, description="Show only overdue tasks")
-    due_before: Optional[datetime] = Field(
+    due_date_from: Optional[datetime] = Field(
+        None, description="Tasks due after this date"
+    )
+    due_date_to: Optional[datetime] = Field(
         None, description="Tasks due before this date"
     )
-    due_after: Optional[datetime] = Field(None, description="Tasks due after this date")
 
 
-class PaginatedTaskResponse(PaginatedResponse):
-    """Paginated response for tasks."""
-
-    items: List[TaskResponse] = Field(..., description="Task items")
+# Type alias for paginated task response
+PaginatedTaskResponse = PaginatedResponse[TaskResponse]

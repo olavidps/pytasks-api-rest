@@ -32,10 +32,7 @@ async def get_db_session() -> AsyncSession:
         AsyncSession: Database session
     """
     async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+        yield session
 
 
 async def create_tables() -> None:

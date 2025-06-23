@@ -1,8 +1,10 @@
 """Common schemas for API requests and responses."""
 
-from typing import Optional
+from typing import Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
+
+T = TypeVar("T")
 
 
 class PaginationParams(BaseModel):
@@ -17,19 +19,22 @@ class PaginationParams(BaseModel):
         return (self.page - 1) * self.size
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(BaseModel, Generic[T]):
     """Generic paginated response wrapper."""
 
+    items: List[T] = Field(..., description="List of items")
     page: int = Field(..., description="Current page number")
     size: int = Field(..., description="Items per page")
     total: int = Field(..., description="Total number of items")
     pages: int = Field(..., description="Total number of pages")
 
     @classmethod
-    def create(cls, page: int, size: int, total: int) -> "PaginatedResponse":
-        """Create pagination metadata."""
+    def create(
+        cls, items: List[T], page: int, size: int, total: int
+    ) -> "PaginatedResponse[T]":
+        """Create paginated response with items and metadata."""
         pages = (total + size - 1) // size  # Ceiling division
-        return cls(page=page, size=size, total=total, pages=pages)
+        return cls(items=items, page=page, size=size, total=total, pages=pages)
 
 
 class FilterParams(BaseModel):
