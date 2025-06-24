@@ -58,6 +58,7 @@ class UserSummary(BaseModel):
     id: UUID = Field(..., description="User unique identifier")
     username: str = Field(..., description="Username")
     full_name: str = Field(..., description="User full name")
+    email: EmailStr = Field(..., description="User email")
 
     class Config:
         """Pydantic configuration."""

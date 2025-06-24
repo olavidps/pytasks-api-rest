@@ -2,9 +2,17 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
-from app.api.dependencies import get_user_repository
+from app.api.dependencies import (
+    get_activate_user_use_case,
+    get_create_user_use_case,
+    get_deactivate_user_use_case,
+    get_delete_user_use_case,
+    get_get_user_use_case,
+    get_get_users_use_case,
+    get_update_user_use_case,
+)
 from app.api.schemas import (
     FilterParams,
     PaginatedResponse,
@@ -14,9 +22,14 @@ from app.api.schemas import (
     UserSummary,
     UserUpdate,
 )
-from app.domain.exceptions.user import UserAlreadyExistsError, UserNotFoundError
+from app.application.use_cases.activate_user import ActivateUserUseCase
+from app.application.use_cases.create_user import CreateUserUseCase
+from app.application.use_cases.deactivate_user import DeactivateUserUseCase
+from app.application.use_cases.delete_user import DeleteUserUseCase
+from app.application.use_cases.get_user import GetUserUseCase
+from app.application.use_cases.get_users import GetUsersUseCase
+from app.application.use_cases.update_user import UpdateUserUseCase
 from app.domain.models.user import User
-from app.domain.repositories.user_repository import UserRepository
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -30,47 +43,16 @@ router = APIRouter(prefix="/users", tags=["users"])
 )
 async def create_user(
     user_data: UserCreate,
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: CreateUserUseCase = Depends(get_create_user_use_case),
 ) -> UserResponse:
     """Create a new user."""
-    try:
-        # Check if user already exists by email
-        existing_user = await user_repo.get_by_email(user_data.email)
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"User with email {user_data.email} already exists",
-            )
-
-        # Check if username is taken
-        if user_data.username:
-            existing_username = await user_repo.get_by_username(user_data.username)
-            if existing_username:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Username {user_data.username} is already taken",
-                )
-
-        # Create user domain object
-        user = User(
-            email=user_data.email,
-            username=user_data.username,
-            full_name=user_data.full_name,
-        )
-
-        # Create user in repository
-        created_user = await user_repo.create(user)
-        return UserResponse.model_validate(created_user)
-    except UserAlreadyExistsError as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create user",
-        ) from e
+    user = User(
+        email=user_data.email,
+        username=user_data.username,
+        full_name=user_data.full_name,
+    )
+    created_user = await use_case.execute(user)
+    return UserResponse.model_validate(created_user)
 
 
 @router.get(
@@ -82,38 +64,21 @@ async def create_user(
 async def get_users(
     pagination: PaginationParams = Depends(),
     filters: FilterParams = Depends(),
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: GetUsersUseCase = Depends(get_get_users_use_case),
 ) -> PaginatedResponse[UserSummary]:
     """Get paginated users with optional filtering."""
-    try:
-        # Build filter criteria
-        filter_criteria = {}
-        if filters.search:
-            filter_criteria["search"] = filters.search
-        if filters.is_active is not None:
-            filter_criteria["is_active"] = filters.is_active
+    # Get paginated results using use case
+    users, total = await use_case.execute(pagination, filters)
 
-        # Get paginated results
-        users, total = await user_repo.get_paginated(
-            offset=pagination.offset,
-            limit=pagination.size,
-            filters=filter_criteria,
-        )
+    # Convert to response models
+    user_summaries = [UserSummary.model_validate(user) for user in users]
 
-        # Convert to response models
-        user_summaries = [UserSummary.model_validate(user) for user in users]
-
-        return PaginatedResponse.create(
-            items=user_summaries,
-            page=pagination.page,
-            size=pagination.size,
-            total=total,
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve users",
-        ) from e
+    return PaginatedResponse.create(
+        items=user_summaries,
+        page=pagination.page,
+        size=pagination.size,
+        total=total,
+    )
 
 
 @router.get(
@@ -124,92 +89,11 @@ async def get_users(
 )
 async def get_user(
     user_id: UUID,
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: GetUserUseCase = Depends(get_get_user_use_case),
 ) -> UserResponse:
     """Get a specific user by ID."""
-    try:
-        user = await user_repo.get_by_id(user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {user_id} not found",
-            )
-        return UserResponse.model_validate(user)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        import traceback
-
-        error_details = f"Failed to retrieve user: {str(e)} - {traceback.format_exc()}"
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_details,
-        ) from e
-
-
-@router.get(
-    "/email/{email}",
-    response_model=UserResponse,
-    summary="Get user by email",
-    description="Retrieve a specific user by their email address.",
-)
-async def get_user_by_email(
-    email: str,
-    user_repo: UserRepository = Depends(get_user_repository),
-) -> UserResponse:
-    """Get a specific user by email."""
-    try:
-        user = await user_repo.get_by_email(email)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with email {email} not found",
-            )
-        return UserResponse.model_validate(user)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve user",
-        ) from e
-
-
-@router.get(
-    "/username/{username}",
-    response_model=UserResponse,
-    summary="Get user by username",
-    description="Retrieve a specific user by their username.",
-)
-async def get_user_by_username(
-    username: str,
-    user_repo: UserRepository = Depends(get_user_repository),
-) -> UserResponse:
-    """Get a specific user by username."""
-    try:
-        user = await user_repo.get_by_username(username)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with username {username} not found",
-            )
-        return UserResponse.model_validate(user)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve user",
-        ) from e
+    user = await use_case.execute(user_id)
+    return UserResponse.model_validate(user)
 
 
 @router.put(
@@ -221,54 +105,11 @@ async def get_user_by_username(
 async def update_user(
     user_id: UUID,
     user_data: UserUpdate,
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: UpdateUserUseCase = Depends(get_update_user_use_case),
 ) -> UserResponse:
-    """Update a specific user."""
-    try:
-        # Check if user exists
-        existing_user = await user_repo.get_by_id(user_id)
-        if not existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {user_id} not found",
-            )
-
-        # Check if email is being changed and if it's already taken
-        if user_data.email and user_data.email != existing_user.email:
-            email_user = await user_repo.get_by_email(user_data.email)
-            if email_user and email_user.id != user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Email {user_data.email} is already taken",
-                )
-
-        # Check if username is being changed and if it's already taken
-        if user_data.username and user_data.username != existing_user.username:
-            username_user = await user_repo.get_by_username(user_data.username)
-            if username_user and username_user.id != user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Username {user_data.username} is already taken",
-                )
-
-        # Update user
-        updated_user = await user_repo.update(user_id, user_data.to_domain_dict())
-        return UserResponse.model_validate(updated_user)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except UserAlreadyExistsError as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update user",
-        ) from e
+    """Update a user."""
+    updated_user = await use_case.execute(user_id, user_data)
+    return UserResponse.model_validate(updated_user)
 
 
 @router.patch(
@@ -279,31 +120,11 @@ async def update_user(
 )
 async def activate_user(
     user_id: UUID,
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: ActivateUserUseCase = Depends(get_activate_user_use_case),
 ) -> UserResponse:
     """Activate a user account."""
-    try:
-        # Check if user exists
-        existing_user = await user_repo.get_by_id(user_id)
-        if not existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {user_id} not found",
-            )
-
-        # Activate user
-        updated_user = await user_repo.update(user_id, {"is_active": True})
-        return UserResponse.model_validate(updated_user)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to activate user",
-        ) from e
+    activated_user = await use_case.execute(user_id)
+    return UserResponse.model_validate(activated_user)
 
 
 @router.patch(
@@ -314,31 +135,11 @@ async def activate_user(
 )
 async def deactivate_user(
     user_id: UUID,
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: DeactivateUserUseCase = Depends(get_deactivate_user_use_case),
 ) -> UserResponse:
     """Deactivate a user account."""
-    try:
-        # Check if user exists
-        existing_user = await user_repo.get_by_id(user_id)
-        if not existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {user_id} not found",
-            )
-
-        # Deactivate user
-        updated_user = await user_repo.update(user_id, {"is_active": False})
-        return UserResponse.model_validate(updated_user)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to deactivate user",
-        ) from e
+    deactivated_user = await use_case.execute(user_id)
+    return UserResponse.model_validate(deactivated_user)
 
 
 @router.delete(
@@ -349,27 +150,7 @@ async def deactivate_user(
 )
 async def delete_user(
     user_id: UUID,
-    user_repo: UserRepository = Depends(get_user_repository),
+    use_case: DeleteUserUseCase = Depends(get_delete_user_use_case),
 ) -> None:
-    """Delete a specific user."""
-    try:
-        # Check if user exists
-        existing_user = await user_repo.get_by_id(user_id)
-        if not existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {user_id} not found",
-            )
-
-        # Delete user
-        await user_repo.delete(user_id)
-    except UserNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete user",
-        ) from e
+    """Delete a user."""
+    await use_case.execute(user_id)

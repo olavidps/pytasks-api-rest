@@ -55,7 +55,7 @@ class UserRepository(ABC):
         """
 
     @abstractmethod
-    async def update(self, user: User) -> User:
+    async def update(self, user_id: str, user: User) -> User:
         """Update user.
 
         Args:

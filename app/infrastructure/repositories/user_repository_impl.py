@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.exceptions.user import UserAlreadyExistsError, UserNotFoundError
+from app.domain.exceptions.user import UserNotFoundError
 from app.domain.models.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models.user import UserModel
@@ -31,35 +31,19 @@ class UserRepositoryImpl(UserRepository):
 
         Returns:
             Created user with generated ID
-
-        Raises:
-            UserAlreadyExistsError: If user with email or username already exists
         """
-        # Check if user with email already exists
-        existing_email = await self.session.execute(
-            select(UserModel).where(UserModel.email == user.email)
-        )
-        if existing_email.scalar_one_or_none():
-            raise UserAlreadyExistsError("email", user.email)
-
-        # Check if user with username already exists
-        existing_username = await self.session.execute(
-            select(UserModel).where(UserModel.username == user.username)
-        )
-        if existing_username.scalar_one_or_none():
-            raise UserAlreadyExistsError("username", user.username)
-
-        # Create new user model
         user_model = UserModel(
             id=user.id,
             email=user.email,
             username=user.username,
             full_name=user.full_name,
             is_active=user.is_active,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
         )
 
         self.session.add(user_model)
-        await self.session.flush()
+        await self.session.commit()
         await self.session.refresh(user_model)
 
         return self._to_domain(user_model)
@@ -79,18 +63,21 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            raise UserNotFoundError(user_id)
+            raise UserNotFoundError(f"User with ID {user_id} not found")
 
         return self._to_domain(user_model)
 
-    async def get_by_email(self, email: str) -> Optional[User]:
+    async def get_by_email(self, email: str) -> User:
         """Get user by email.
 
         Args:
             email: Email address of the user
 
         Returns:
-            User if found, None otherwise
+            User if found
+
+        Raises:
+            UserNotFoundError: If user with given email doesn't exist
         """
         result = await self.session.execute(
             select(UserModel).where(UserModel.email == email)
@@ -98,18 +85,21 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            return None
+            raise UserNotFoundError(f"User with email {email} not found")
 
         return self._to_domain(user_model)
 
-    async def get_by_username(self, username: str) -> Optional[User]:
+    async def get_by_username(self, username: str) -> User:
         """Get user by username.
 
         Args:
             username: Username of the user
 
         Returns:
-            User if found, None otherwise
+            User if found
+
+        Raises:
+            UserNotFoundError: If user with given username doesn't exist
         """
         result = await self.session.execute(
             select(UserModel).where(UserModel.username == username)
@@ -117,11 +107,11 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            return None
+            raise UserNotFoundError(f"User with username {username} not found")
 
         return self._to_domain(user_model)
 
-    async def update(self, user: User) -> User:
+    async def update(self, user_id: str, user: User) -> User:
         """Update user.
 
         Args:
@@ -134,7 +124,7 @@ class UserRepositoryImpl(UserRepository):
             UserNotFoundError: If user with given ID doesn't exist
         """
         result = await self.session.execute(
-            select(UserModel).where(UserModel.id == user.id)
+            select(UserModel).where(UserModel.id == user_id)
         )
         user_model = result.scalar_one_or_none()
 
@@ -149,7 +139,7 @@ class UserRepositoryImpl(UserRepository):
         user_model.updated_at = user.updated_at
         user_model.last_login = user.last_login
 
-        await self.session.flush()
+        await self.session.commit()
         await self.session.refresh(user_model)
 
         return self._to_domain(user_model)
@@ -169,10 +159,10 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            raise UserNotFoundError(user_id)
+            raise UserNotFoundError(f"User with ID {user_id} not found")
 
         await self.session.delete(user_model)
-        await self.session.flush()
+        await self.session.commit()
         return True
 
     async def list_all(self, skip: int = 0, limit: int = 100) -> List[User]:

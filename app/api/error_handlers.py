@@ -3,6 +3,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from app.domain.exceptions.user import UserAlreadyExistsError, UserNotFoundError
+
 
 class AppException(Exception):
     """Base exception for application errors."""
@@ -22,4 +24,22 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},
+        )
+
+    @app.exception_handler(UserNotFoundError)
+    async def user_not_found_handler(
+        request: Request, exc: UserNotFoundError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=404,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(UserAlreadyExistsError)
+    async def user_already_exists_handler(
+        request: Request, exc: UserAlreadyExistsError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=409,
+            content={"detail": str(exc)},
         )
