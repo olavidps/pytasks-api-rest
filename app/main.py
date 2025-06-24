@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.error_handlers import register_exception_handlers
-from app.api.routes import health
+from app.api.routes import health_router, task_lists_router, tasks_router, users_router
 from app.config import settings
 
 
@@ -35,7 +35,19 @@ def create_app() -> FastAPI:
 
     # Include routers
     app.include_router(
-        health.router,
+        health_router,
+        prefix=settings.API_V1_STR,
+    )
+    app.include_router(
+        users_router,
+        prefix=settings.API_V1_STR,
+    )
+    app.include_router(
+        task_lists_router,
+        prefix=settings.API_V1_STR,
+    )
+    app.include_router(
+        tasks_router,
         prefix=settings.API_V1_STR,
     )
 

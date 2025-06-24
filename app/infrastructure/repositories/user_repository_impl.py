@@ -1,12 +1,12 @@
 """User repository implementation."""
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.exceptions.user import UserAlreadyExistsError, UserNotFoundError
+from app.domain.exceptions.user import UserNotFoundError
 from app.domain.models.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models.user import UserModel
@@ -31,25 +31,7 @@ class UserRepositoryImpl(UserRepository):
 
         Returns:
             Created user with generated ID
-
-        Raises:
-            UserAlreadyExistsError: If user with email or username already exists
         """
-        # Check if user with email already exists
-        existing_email = await self.session.execute(
-            select(UserModel).where(UserModel.email == user.email)
-        )
-        if existing_email.scalar_one_or_none():
-            raise UserAlreadyExistsError("email", user.email)
-
-        # Check if user with username already exists
-        existing_username = await self.session.execute(
-            select(UserModel).where(UserModel.username == user.username)
-        )
-        if existing_username.scalar_one_or_none():
-            raise UserAlreadyExistsError("username", user.username)
-
-        # Create new user model
         user_model = UserModel(
             id=user.id,
             email=user.email,
@@ -58,7 +40,6 @@ class UserRepositoryImpl(UserRepository):
             is_active=user.is_active,
             created_at=user.created_at,
             updated_at=user.updated_at,
-            last_login=user.last_login,
         )
 
         self.session.add(user_model)
@@ -124,7 +105,7 @@ class UserRepositoryImpl(UserRepository):
 
         return self._to_domain(user_model)
 
-    async def update(self, user: User) -> User:
+    async def update(self, user_id: str, user: User) -> User:
         """Update user.
 
         Args:
@@ -137,7 +118,7 @@ class UserRepositoryImpl(UserRepository):
             UserNotFoundError: If user with given ID doesn't exist
         """
         result = await self.session.execute(
-            select(UserModel).where(UserModel.id == user.id)
+            select(UserModel).where(UserModel.id == user_id)
         )
         user_model = result.scalar_one_or_none()
 
@@ -172,7 +153,7 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            return False
+            raise UserNotFoundError(f"User with ID {user_id} not found")
 
         await self.session.delete(user_model)
         await self.session.commit()
@@ -259,6 +240,57 @@ class UserRepositoryImpl(UserRepository):
             select(UserModel.id).where(UserModel.username == username)
         )
         return result.scalar_one_or_none() is not None
+
+    async def get_paginated(
+        self, offset: int = 0, limit: int = 20, filters: Optional[Dict] = None
+    ) -> tuple[List[User], int]:
+        """Get paginated users with optional filtering.
+
+        Args:
+            offset: Number of users to skip
+            limit: Maximum number of users to return
+            filters: Optional dictionary of filters (search, is_active)
+
+        Returns:
+            Tuple of (users list, total count)
+        """
+        # Build base query
+        query = select(UserModel)
+        count_query = select(func.count(UserModel.id))
+
+        # Apply filters if provided
+        if filters:
+            # Filter by active status
+            if "is_active" in filters and filters["is_active"] is not None:
+                query = query.where(UserModel.is_active == filters["is_active"])
+                count_query = count_query.where(
+                    UserModel.is_active == filters["is_active"]
+                )
+
+            # Filter by search term (search in username, email, or full_name)
+            if "search" in filters and filters["search"]:
+                search_term = f"%{filters['search']}%"
+                search_condition = or_(
+                    UserModel.username.ilike(search_term),
+                    UserModel.email.ilike(search_term),
+                    UserModel.full_name.ilike(search_term),
+                )
+                query = query.where(search_condition)
+                count_query = count_query.where(search_condition)
+
+        # Get total count
+        total_result = await self.session.execute(count_query)
+        total = total_result.scalar()
+
+        # Apply pagination and get results
+        query = query.offset(offset).limit(limit)
+        result = await self.session.execute(query)
+        user_models = result.scalars().all()
+
+        # Convert to domain entities
+        users = [self._to_domain(user_model) for user_model in user_models]
+
+        return users, total
 
     def _to_domain(self, user_model: UserModel) -> User:
         """Convert SQLAlchemy model to domain entity.

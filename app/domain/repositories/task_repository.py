@@ -125,3 +125,21 @@ class TaskRepository(ABC):
         Returns:
             True if task exists, False otherwise
         """
+
+    @abstractmethod
+    async def get_paginated(
+        self,
+        offset: int = 0,
+        limit: int = 100,
+        filters: Optional[dict] = None,
+    ) -> tuple[List[Task], int]:
+        """Get paginated tasks with optional filters.
+
+        Args:
+            offset: Number of records to skip
+            limit: Maximum number of records to return
+            filters: Optional filters to apply
+
+        Returns:
+            Tuple containing list of tasks and total count
+        """

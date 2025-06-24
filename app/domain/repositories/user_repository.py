@@ -55,7 +55,7 @@ class UserRepository(ABC):
         """
 
     @abstractmethod
-    async def update(self, user: User) -> User:
+    async def update(self, user_id: str, user: User) -> User:
         """Update user.
 
         Args:
@@ -125,4 +125,19 @@ class UserRepository(ABC):
 
         Returns:
             True if username exists, False otherwise
+        """
+
+    @abstractmethod
+    async def get_paginated(
+        self, offset: int = 0, limit: int = 20, filters: Optional[dict] = None
+    ) -> tuple[List[User], int]:
+        """Get paginated users with optional filtering.
+
+        Args:
+            offset: Number of users to skip
+            limit: Maximum number of users to return
+            filters: Optional dictionary of filters (search, is_active)
+
+        Returns:
+            Tuple of (users list, total count)
         """

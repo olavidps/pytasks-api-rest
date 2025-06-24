@@ -53,6 +53,8 @@ def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
     if url is None:
         url = str(settings.DATABASE_URL)
+        # Convert asyncpg URL to psycopg2 for Alembic migrations
+        url = url.replace("postgresql+asyncpg://", "postgresql://")
 
     context.configure(
         url=url,
@@ -78,7 +80,10 @@ def run_migrations_online() -> None:
 
     # Override URL if not set in config
     if "sqlalchemy.url" not in configuration:
-        configuration["sqlalchemy.url"] = str(settings.DATABASE_URL)
+        database_url = str(settings.DATABASE_URL)
+        # Convert asyncpg URL to psycopg2 for Alembic migrations
+        database_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+        configuration["sqlalchemy.url"] = database_url
 
     connectable = engine_from_config(
         configuration,

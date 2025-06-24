@@ -231,6 +231,72 @@ class TaskRepositoryImpl(TaskRepository):
         )
         return result.scalar_one_or_none() is not None
 
+    async def get_paginated(
+        self,
+        offset: int = 0,
+        limit: int = 100,
+        filters: Optional[dict] = None,
+    ) -> tuple[List[Task], int]:
+        """Get paginated tasks with optional filters.
+
+        Args:
+            offset: Number of records to skip
+            limit: Maximum number of records to return
+            filters: Optional filters to apply
+
+        Returns:
+            Tuple containing list of tasks and total count
+        """
+        # Build base query
+        query = select(TaskModel)
+        count_query = select(func.count(TaskModel.id))
+
+        # Apply filters if provided
+        if filters:
+            # Filter by task_list_id
+            if "task_list_id" in filters and filters["task_list_id"]:
+                query = query.where(TaskModel.task_list_id == filters["task_list_id"])
+                count_query = count_query.where(
+                    TaskModel.task_list_id == filters["task_list_id"]
+                )
+
+            # Filter by assigned_user_id
+            if "assigned_user_id" in filters and filters["assigned_user_id"]:
+                query = query.where(
+                    TaskModel.assigned_user_id == filters["assigned_user_id"]
+                )
+                count_query = count_query.where(
+                    TaskModel.assigned_user_id == filters["assigned_user_id"]
+                )
+
+            # Filter by status
+            if "status" in filters and filters["status"]:
+                query = query.where(TaskModel.status == filters["status"])
+                count_query = count_query.where(TaskModel.status == filters["status"])
+
+            # Filter by priority
+            if "priority" in filters and filters["priority"]:
+                query = query.where(TaskModel.priority == filters["priority"])
+                count_query = count_query.where(
+                    TaskModel.priority == filters["priority"]
+                )
+
+            # query.options(joinedload(TaskListModel.tasks))
+
+        # Get total count
+        count_result = await self.session.execute(count_query)
+        total = count_result.scalar() or 0
+
+        # Apply pagination and get results
+        query = query.offset(offset).limit(limit)
+        result = await self.session.execute(query)
+        task_models = result.scalars().all()
+
+        # Convert to domain entities
+        tasks = [self._to_domain(task_model) for task_model in task_models]
+
+        return tasks, total
+
     def _to_domain(self, task_model: TaskModel) -> Task:
         """Convert SQLAlchemy model to domain entity.
 
