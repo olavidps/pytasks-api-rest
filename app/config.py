@@ -18,7 +18,7 @@ class BaseConfig(BaseSettings):
     SECRET_KEY: str = Field(
         default="development_secret_key_change_in_production",
     )
-    DATABASE_URL: PostgresDsn
+    DATABASE_URL: str
 
     class Config:
         """Configuration settings for the application."""
@@ -47,8 +47,8 @@ class TestingConfig(BaseConfig):
     """Testing configuration."""
 
     DEBUG: bool = True
-    DATABASE_URL: PostgresDsn = Field(
-        default="postgresql://postgres:postgres@localhost:5432/pytasks_test",
+    DATABASE_URL: str = Field(
+        default="postgresql+asyncpg://postgres:postgres@localhost:5432/pytasks_test",
         validation_alias="TEST_DATABASE_URL",
     )
 

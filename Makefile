@@ -94,7 +94,7 @@ test-db-up:
 	@echo "Waiting for database to be ready..."
 	@sleep 5
 	@echo "Running database migrations..."
-	DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pytasks_test poetry run alembic upgrade head
+	DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/pytasks_test poetry run alembic upgrade head
 	@echo "Test database ready at localhost:5432"
 
 test-db-down: ## Stop test database

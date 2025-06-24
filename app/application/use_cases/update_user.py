@@ -4,6 +4,7 @@ from uuid import UUID
 
 from app.api.schemas.user_schemas import UserUpdate
 from app.application.services.user_validation_service import UserValidationService
+from app.domain.exceptions.user import UserNotFoundError
 from app.domain.models.user import User
 from app.domain.repositories.user_repository import UserRepository
 
@@ -38,6 +39,8 @@ class UpdateUserUseCase:
         """
         # Get existing user
         existing_user = await self.user_repository.get_by_id(user_id)
+        if not existing_user:
+            raise UserNotFoundError(f"User with id {user_id} not found")
 
         # Validate user availability (only validates changed fields)
         await self.user_validation_service.validate_user_availability(

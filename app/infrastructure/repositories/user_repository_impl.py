@@ -63,21 +63,18 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            raise UserNotFoundError(f"User with ID {user_id} not found")
+            return None
 
         return self._to_domain(user_model)
 
-    async def get_by_email(self, email: str) -> User:
+    async def get_by_email(self, email: str) -> Optional[User]:
         """Get user by email.
 
         Args:
             email: Email address of the user
 
         Returns:
-            User if found
-
-        Raises:
-            UserNotFoundError: If user with given email doesn't exist
+            User if found, None otherwise
         """
         result = await self.session.execute(
             select(UserModel).where(UserModel.email == email)
@@ -85,21 +82,18 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            raise UserNotFoundError(f"User with email {email} not found")
+            return None
 
         return self._to_domain(user_model)
 
-    async def get_by_username(self, username: str) -> User:
+    async def get_by_username(self, username: str) -> Optional[User]:
         """Get user by username.
 
         Args:
             username: Username of the user
 
         Returns:
-            User if found
-
-        Raises:
-            UserNotFoundError: If user with given username doesn't exist
+            User if found, None otherwise
         """
         result = await self.session.execute(
             select(UserModel).where(UserModel.username == username)
@@ -107,7 +101,7 @@ class UserRepositoryImpl(UserRepository):
         user_model = result.scalar_one_or_none()
 
         if user_model is None:
-            raise UserNotFoundError(f"User with username {username} not found")
+            return None
 
         return self._to_domain(user_model)
 

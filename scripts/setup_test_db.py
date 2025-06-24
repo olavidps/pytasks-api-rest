@@ -139,14 +139,14 @@ def parse_database_url(url: str) -> tuple[str, dict]:
 async def setup_test_database() -> bool:
     """Set up test database and tables."""
     settings = get_settings()
-    test_db_url = settings.test_database_url
+    test_db_url = settings.DATABASE_URL
 
     if not test_db_url:
-        print("❌ TEST_DATABASE_URL not configured")
+        print("❌ DATABASE_URL not configured")
         return False
 
     try:
-        database_name, connection_params = parse_database_url(test_db_url)
+        database_name, connection_params = parse_database_url(str(test_db_url))
         print(f"🔧 Setting up test database: {database_name}")
 
         # Check if database exists, create if not
@@ -174,14 +174,14 @@ async def setup_test_database() -> bool:
 async def teardown_test_database() -> bool:
     """Teardown test database."""
     settings = get_settings()
-    test_db_url = settings.test_database_url
+    test_db_url = settings.DATABASE_URL
 
     if not test_db_url:
-        print("❌ TEST_DATABASE_URL not configured")
+        print("❌ DATABASE_URL not configured")
         return False
 
     try:
-        database_name, connection_params = parse_database_url(test_db_url)
+        database_name, connection_params = parse_database_url(str(test_db_url))
         print(f"🧹 Tearing down test database: {database_name}")
 
         # Drop tables first
@@ -202,14 +202,14 @@ async def teardown_test_database() -> bool:
 async def reset_test_database() -> bool:
     """Reset test database (drop and recreate)."""
     settings = get_settings()
-    test_db_url = settings.test_database_url
+    test_db_url = settings.DATABASE_URL
 
     if not test_db_url:
-        print("❌ TEST_DATABASE_URL not configured")
+        print("❌ DATABASE_URL not configured")
         return False
 
     try:
-        database_name, connection_params = parse_database_url(test_db_url)
+        database_name, connection_params = parse_database_url(str(test_db_url))
         print(f"🔄 Resetting test database: {database_name}")
 
         # Drop database
