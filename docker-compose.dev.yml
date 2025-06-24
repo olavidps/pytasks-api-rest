@@ -1,5 +1,5 @@
 # Development environment - Only PostgreSQL for local API development
-version: '3.8'
+version: "3.8"
 
 name: pytasks-dev
 

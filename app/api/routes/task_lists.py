@@ -5,19 +5,32 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.api.dependencies import get_task_list_repository, get_user_repository
+from app.api.dependencies import (
+    get_create_task_list_use_case,
+    get_delete_task_list_use_case,
+    get_get_tasks_use_case,
+    get_task_list_use_case,
+    get_update_task_list_use_case,
+)
 from app.api.schemas import (
     FilterParams,
     PaginatedTaskListResponse,
     PaginationParams,
+    TaskFilterParams,
     TaskListCreate,
     TaskListResponse,
+    TaskListTasksResponse,
     TaskListUpdate,
     TaskListWithStats,
+    TaskResponse,
 )
+from app.application.use_cases.create_task_list import CreateTaskListUseCase
+from app.application.use_cases.delete_task_list import DeleteTaskListUseCase
+from app.application.use_cases.get_task_list import GetTaskListUseCase
+from app.application.use_cases.get_tasks import GetTasksUseCase
+from app.application.use_cases.update_task_list import UpdateTaskListUseCase
 from app.domain.exceptions.task_list import TaskListNotFoundError
-from app.domain.repositories.task_list_repository import TaskListRepository
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.exceptions.user import UserNotFoundError
 
 router = APIRouter(prefix="/task-lists", tags=["task-lists"])
 
@@ -31,28 +44,16 @@ router = APIRouter(prefix="/task-lists", tags=["task-lists"])
 )
 async def create_task_list(
     task_list_data: TaskListCreate,
-    task_list_repo: TaskListRepository = Depends(get_task_list_repository),
-    user_repo: UserRepository = Depends(get_user_repository),
+    create_task_list_use_case: CreateTaskListUseCase = Depends(
+        get_create_task_list_use_case
+    ),
 ) -> TaskListResponse:
     """Create a new task list."""
-    # Verify owner exists
     try:
-        owner = await user_repo.get_by_id(task_list_data.owner_id)
-        if not owner:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {task_list_data.owner_id} not found",
-            )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {task_list_data.owner_id} not found",
-        ) from e
-
-    # Create task list
-    try:
-        task_list = await task_list_repo.create(task_list_data.to_domain())
-        return TaskListResponse.from_domain(task_list)
+        task_list = await create_task_list_use_case.execute(task_list_data)
+        return TaskListResponse.model_validate(task_list)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -70,34 +71,20 @@ async def get_task_lists(
     pagination: PaginationParams = Depends(),
     filters: FilterParams = Depends(),
     owner_id: Optional[UUID] = Query(None, description="Filter by owner ID"),
-    task_list_repo: TaskListRepository = Depends(get_task_list_repository),
+    get_task_list_use_case: GetTaskListUseCase = Depends(get_task_list_use_case),
 ) -> PaginatedTaskListResponse:
     """Get paginated task lists with optional filtering."""
     try:
-        # Build filter criteria
-        filter_criteria = {}
-        if filters.search:
-            filter_criteria["search"] = filters.search
-        if filters.is_active is not None:
-            filter_criteria["is_active"] = filters.is_active
-        if owner_id:
-            filter_criteria["owner_id"] = owner_id
-
-        # Get paginated results
-        task_lists, total = await task_list_repo.get_paginated(
+        return await get_task_list_use_case.get_paginated(
             offset=pagination.offset,
             limit=pagination.size,
-            filters=filter_criteria,
-        )
-
-        # Convert to response models
-        task_list_responses = [TaskListResponse.from_domain(tl) for tl in task_lists]
-
-        return PaginatedTaskListResponse.create(
-            items=task_list_responses,
+            filters={
+                "search": filters.search,
+                "is_active": filters.is_active,
+                "owner_id": owner_id,
+            },
             page=pagination.page,
             size=pagination.size,
-            total=total,
         )
     except Exception as e:
         raise HTTPException(
@@ -114,26 +101,77 @@ async def get_task_lists(
 )
 async def get_task_list(
     task_list_id: UUID,
-    task_list_repo: TaskListRepository = Depends(get_task_list_repository),
+    get_task_list_use_case: GetTaskListUseCase = Depends(get_task_list_use_case),
 ) -> TaskListWithStats:
     """Get a specific task list by ID."""
     try:
-        task_list = await task_list_repo.get_by_id(task_list_id)
-        if not task_list:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task list with id {task_list_id} not found",
-            )
-        return TaskListWithStats.from_domain(task_list)
+        return await get_task_list_use_case.get_by_id(task_list_id)
     except TaskListNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve task list",
+        ) from e
+
+
+@router.get(
+    "/{task_list_id}/tasks",
+    response_model=TaskListTasksResponse,
+    summary="Get tasks in task list",
+    description="Retrieve all tasks within a specific task list with optional filtering and completion percentage.",
+)
+async def get_task_list_tasks(
+    task_list_id: UUID,
+    pagination: PaginationParams = Depends(),
+    task_filters: TaskFilterParams = Depends(),
+    get_task_list_use_case: GetTaskListUseCase = Depends(get_task_list_use_case),
+    get_tasks_use_case: GetTasksUseCase = Depends(get_get_tasks_use_case),
+) -> TaskListTasksResponse:
+    """Get tasks within a specific task list with filtering and statistics."""
+    try:
+        # First verify the task list exists and get its statistics
+        task_list_stats = await get_task_list_use_case.get_by_id(task_list_id)
+
+        # Prepare filters for tasks, including the task_list_id
+        filters = {
+            "task_list_id": task_list_id,
+            "status": task_filters.status,
+            "priority": task_filters.priority,
+            "assigned_to_id": task_filters.assigned_to_id,
+            "search": task_filters.search,
+            "due_date_from": task_filters.due_date_from,
+            "due_date_to": task_filters.due_date_to,
+        }
+
+        # Get filtered tasks
+        tasks, _ = await get_tasks_use_case.execute(pagination, filters)
+
+        # Convert tasks to response format
+        task_responses = [TaskResponse.model_validate(task) for task in tasks]
+
+        # Create the response combining task list stats with tasks
+        return TaskListTasksResponse(
+            id=task_list_stats.id,
+            name=task_list_stats.name,
+            description=task_list_stats.description,
+            owner_id=task_list_stats.owner_id,
+            is_active=task_list_stats.is_active,
+            created_at=task_list_stats.created_at,
+            updated_at=task_list_stats.updated_at,
+            total_tasks=task_list_stats.total_tasks,
+            completed_tasks=task_list_stats.completed_tasks,
+            pending_tasks=task_list_stats.pending_tasks,
+            in_progress_tasks=task_list_stats.in_progress_tasks,
+            completion_percentage=task_list_stats.completion_percentage,
+            tasks=task_responses,
+        )
+    except TaskListNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve task list tasks",
         ) from e
 
 
@@ -146,28 +184,22 @@ async def get_task_list(
 async def update_task_list(
     task_list_id: UUID,
     task_list_data: TaskListUpdate,
-    task_list_repo: TaskListRepository = Depends(get_task_list_repository),
+    update_task_list_use_case: UpdateTaskListUseCase = Depends(
+        get_update_task_list_use_case
+    ),
+    get_task_list_use_case: GetTaskListUseCase = Depends(get_task_list_use_case),
 ) -> TaskListResponse:
     """Update a specific task list."""
     try:
-        # Check if task list exists
-        existing_task_list = await task_list_repo.get_by_id(task_list_id)
-        if not existing_task_list:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task list with id {task_list_id} not found",
-            )
-
-        # Update task list
-        updated_task_list = await task_list_repo.update(
-            task_list_id, task_list_data.to_domain_dict()
+        updated_task_list = await update_task_list_use_case.execute(
+            task_list_id, task_list_data
         )
-        return TaskListResponse.from_domain(updated_task_list)
+
+        return TaskListResponse.model_validate(updated_task_list)
     except TaskListNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -183,27 +215,12 @@ async def update_task_list(
 )
 async def delete_task_list(
     task_list_id: UUID,
-    task_list_repo: TaskListRepository = Depends(get_task_list_repository),
+    delete_task_list_use_case: DeleteTaskListUseCase = Depends(
+        get_delete_task_list_use_case
+    ),
 ) -> None:
     """Delete a specific task list."""
     try:
-        # Check if task list exists
-        existing_task_list = await task_list_repo.get_by_id(task_list_id)
-        if not existing_task_list:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task list with id {task_list_id} not found",
-            )
-
-        # Delete task list
-        await task_list_repo.delete(task_list_id)
+        await delete_task_list_use_case.execute(task_list_id)
     except TaskListNotFoundError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete task list",
-        ) from e
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e

@@ -23,8 +23,8 @@ class TaskListModel(Base):
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(200))
     description: Mapped[Optional[str]] = mapped_column(Text)
-    owner_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True), ForeignKey("users.id"), index=True
+    owner_id: Mapped[Optional[UUID]] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=True
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(

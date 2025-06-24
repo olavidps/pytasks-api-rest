@@ -17,7 +17,7 @@ This file tracks key decisions made during development.
 - pytest testing (75% coverage target)
 - Code quality: black, flake8, isort
 
-**Bonus Features:**
+**Additional Features:**
 
 - JWT authentication
 - Task assignment to users
@@ -79,13 +79,16 @@ This file tracks key decisions made during development.
 
 ## 4. Domain Layer Implementation
 
-### Repository Pattern
+### Repository Pattern and Rich Domain Models
 
-Models, exceptions, and repositories were added. Basic CRUD methods were implemented to handle data operations. Filtering and pagination were included to support project needs.
+**Decision**: Implement repository pattern with rich domain models containing business logic
 
-Business logic was placed inside the models. Clear method names like `mark_as_completed()` were used to make the code easy to understand. Properties were added to represent states such as `is_completed` and `is_overdue`.
+- Models contain business logic with clear method names like `mark_as_completed()`
+- Repository interfaces abstract data access from business logic
+- Properties represent computed states like `is_completed` and `is_overdue`
+- Custom exceptions provide meaningful error handling
 
-These choices helped keep the code clean and maintainable.
+**Why**: Prevents anemic domain models and scattered business logic. Repository pattern enables easy testing with mocks. Domain methods like `mark_as_completed()` keep business rules in one place.
 
 ## 5. Testing Infrastructure
 
@@ -99,6 +102,8 @@ These choices helped keep the code clean and maintainable.
 - Proper async session management with SQLAlchemy
 - Automatic cleanup without data persistence
 
+**Why**: Prevents flaky tests and "works on my machine" issues. Transaction rollback is faster than recreating DB. Each test gets clean state regardless of execution order.
+
 ### Pre-commit Integration
 
 **Decision**: Integrate full database lifecycle into pre-commit hooks
@@ -108,7 +113,7 @@ These choices helped keep the code clean and maintainable.
 - Complete test suite execution on every commit
 - Automatic cleanup of test containers
 
-**Reason**: Ensures all commits are tested against a real database, preventing integration issues in CI/CD.
+**Why**: Catches issues before they reach CI/CD where they're expensive to fix. Automatic DB lifecycle removes friction - no excuses to skip tests.
 
 ## 6. Development Workflow
 
@@ -134,4 +139,36 @@ These choices helped keep the code clean and maintainable.
 - Added dependency injection for database sessions and repositories
 - Established consistent API response formats
 
-**Reason**: Provides type-safe API contracts, automatic validation, and clean separation between domain models and API DTOs. Enables rapid CRUD endpoint development.
+**Why**: Eliminates manual validation and boilerplate. Auto-generates docs. Modular structure prevents monolithic schema files. Dependency injection makes testing easy with mocks.
+
+## 8. Domain Services and Database Refinements
+
+### Task and TaskList Domain Services
+
+**Decision**: Implement dedicated domain services for complex business operations
+
+- Created `TaskDomainService` for task-specific business logic
+- Created `TaskListDomainService` for task list operations and ownership management
+- Encapsulated complex domain rules and validations
+
+**Why**: Needed a place for complex business logic that doesn't fit in repositories or entities. Solves the "where does this logic go?" problem. Keeps business rules centralized and testable.
+
+### Database Schema Evolution
+
+**Decision**: Make TaskList owner_id nullable to support shared/public task lists
+
+- Added migration `cde2f8866870_make_owner_id_nullable_in_tasklist.py`
+- Updated repository implementations to handle nullable owner scenarios
+- Enhanced filtering capabilities for ownership-based queries
+
+**Why**: Original design assumed all lists need owners, but real-world needs shared/public lists. Making it nullable now avoids major refactoring later. Better to be flexible from the start.
+
+### Test Infrastructure Enhancement
+
+**Decision**: Implement comprehensive mocked endpoint testing alongside integration tests
+
+- Added `test_users_endpoints.py` for real database integration tests
+- Enhanced `test_users_endpoints_mocked.py` for fast unit-style API tests
+- Improved test configuration and fixtures for better isolation
+
+**Why**: Integration tests are slow but thorough, mocked tests are fast but limited. Need both for the testing pyramid - fast feedback during development, confidence in real scenarios.

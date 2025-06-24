@@ -9,6 +9,7 @@ from .task_list_schemas import (
     TaskListCreate,
     TaskListResponse,
     TaskListSummary,
+    TaskListTasksResponse,
     TaskListUpdate,
     TaskListWithOwner,
     TaskListWithStats,
@@ -46,6 +47,7 @@ __all__ = [
     "TaskListUpdate",
     "TaskListResponse",
     "TaskListSummary",
+    "TaskListTasksResponse",
     "TaskListWithOwner",
     "TaskListWithStats",
     "PaginatedTaskListResponse",
@@ -61,3 +63,8 @@ __all__ = [
     "TaskFilterParams",
     "PaginatedTaskResponse",
 ]
+
+# Rebuild models to resolve forward references after all imports
+from .task_list_schemas import TaskListTasksResponse
+
+TaskListTasksResponse.model_rebuild()

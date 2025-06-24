@@ -955,6 +955,1625 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "tasks",
+			"item": [
+				{
+					"name": "Tasks",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/tasks/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 06:50:49 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "696"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"items\": [\n        {\n            \"title\": \"Task 001\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"13eb5dab-1635-4960-93a9-a14e5c04f159\",\n            \"status\": \"pending\",\n            \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T06:47:19.200967Z\",\n            \"updated_at\": \"2025-06-24T06:47:19.200978Z\",\n            \"completed_at\": null\n        },\n        {\n            \"title\": \"Task 001\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"8e5c52da-8d07-42bb-9e64-7628955bbb81\",\n            \"status\": \"pending\",\n            \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T06:47:44.838847Z\",\n            \"updated_at\": \"2025-06-24T06:47:44.838859Z\",\n            \"completed_at\": null\n        }\n    ],\n    \"page\": 1,\n    \"size\": 20,\n    \"total\": 3,\n    \"pages\": 1\n}"
+						},
+						{
+							"name": "200 by uuid",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"f07884d5-63a6-491f-9a9a-4e1f9560100a"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 06:54:22 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "424"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"title\": \"Task 003\",\n    \"description\": null,\n    \"priority\": \"medium\",\n    \"due_date\": null,\n    \"id\": \"f07884d5-63a6-491f-9a9a-4e1f9560100a\",\n    \"status\": \"pending\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n    \"assigned_user_id\": null,\n    \"created_at\": \"2025-06-24T06:51:01.532427Z\",\n    \"updated_at\": \"2025-06-24T06:51:01.532440Z\",\n    \"completed_at\": null,\n    \"task_list\": {\n        \"id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n        \"name\": \"Task List 001\"\n    },\n    \"assigned_user\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Task 003\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/tasks/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "201",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Task 003\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 06:51:01 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "322"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"title\": \"Task 003\",\n    \"description\": null,\n    \"priority\": \"medium\",\n    \"due_date\": null,\n    \"id\": \"f07884d5-63a6-491f-9a9a-4e1f9560100a\",\n    \"status\": \"pending\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n    \"assigned_user_id\": null,\n    \"created_at\": \"2025-06-24T06:51:01.532427Z\",\n    \"updated_at\": \"2025-06-24T06:51:01.532440Z\",\n    \"completed_at\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Task 003 - v1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"f07884d5-63a6-491f-9a9a-4e1f9560100a"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "404",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Task 003 - v1\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/5994ae3b-ade0-4329-86d8-e1e7a1ca0090",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"5994ae3b-ade0-4329-86d8-e1e7a1ca0090"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 07:10:22 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "95"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"detail\": \"Task with id Task with id 5994ae3b-ade0-4329-86d8-e1e7a1ca0090 not found not found\"\n}"
+						},
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Task 003 - v1\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"f07884d5-63a6-491f-9a9a-4e1f9560100a"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 07:20:23 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "327"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"title\": \"Task 003 - v1\",\n    \"description\": null,\n    \"priority\": \"medium\",\n    \"due_date\": null,\n    \"id\": \"f07884d5-63a6-491f-9a9a-4e1f9560100a\",\n    \"status\": \"pending\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n    \"assigned_user_id\": null,\n    \"created_at\": \"2025-06-24T06:51:01.532427Z\",\n    \"updated_at\": \"2025-06-24T07:20:23.823449Z\",\n    \"completed_at\": null\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Task priority",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"priority\": \"high\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a/priority",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"f07884d5-63a6-491f-9a9a-4e1f9560100a",
+								"priority"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"priority\": \"high\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a/priority",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"f07884d5-63a6-491f-9a9a-4e1f9560100a",
+										"priority"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 07:30:20 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "325"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"title\": \"Task 003 - v1\",\n    \"description\": null,\n    \"priority\": \"high\",\n    \"due_date\": null,\n    \"id\": \"f07884d5-63a6-491f-9a9a-4e1f9560100a\",\n    \"status\": \"pending\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n    \"assigned_user_id\": null,\n    \"created_at\": \"2025-06-24T06:51:01.532427Z\",\n    \"updated_at\": \"2025-06-24T07:30:21.001182Z\",\n    \"completed_at\": null\n}"
+						},
+						{
+							"name": "422",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"priority\": \"strange\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a/priority",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"f07884d5-63a6-491f-9a9a-4e1f9560100a",
+										"priority"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 07:30:48 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "193"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"detail\": [\n        {\n            \"type\": \"enum\",\n            \"loc\": [\n                \"body\",\n                \"priority\"\n            ],\n            \"msg\": \"Input should be 'low', 'medium', 'high' or 'critical'\",\n            \"input\": \"strange\",\n            \"ctx\": {\n                \"expected\": \"'low', 'medium', 'high' or 'critical'\"\n            }\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Task status",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"in_progress\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a/status",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"f07884d5-63a6-491f-9a9a-4e1f9560100a",
+								"status"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"in_progress\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a/status",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"f07884d5-63a6-491f-9a9a-4e1f9560100a",
+										"status"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:01:08 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "329"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"title\": \"Task 003 - v1\",\n    \"description\": null,\n    \"priority\": \"high\",\n    \"due_date\": null,\n    \"id\": \"f07884d5-63a6-491f-9a9a-4e1f9560100a\",\n    \"status\": \"in_progress\",\n    \"task_list_id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n    \"assigned_user_id\": null,\n    \"created_at\": \"2025-06-24T06:51:01.532427Z\",\n    \"updated_at\": \"2025-06-24T10:01:08.537583Z\",\n    \"completed_at\": null\n}"
+						},
+						{
+							"name": "422",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"bad_status\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/f07884d5-63a6-491f-9a9a-4e1f9560100a/status",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"f07884d5-63a6-491f-9a9a-4e1f9560100a",
+										"status"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:01:37 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "198"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"detail\": [\n        {\n            \"type\": \"enum\",\n            \"loc\": [\n                \"body\",\n                \"status\"\n            ],\n            \"msg\": \"Input should be 'pending', 'in_progress' or 'completed'\",\n            \"input\": \"bad_status\",\n            \"ctx\": {\n                \"expected\": \"'pending', 'in_progress' or 'completed'\"\n            }\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/tasks/8e5c52da-8d07-42bb-9e64-7628955bbb81",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"8e5c52da-8d07-42bb-9e64-7628955bbb81"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "404",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/99aa4f71-76f1-43ed-885d-e8f25aad549c",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"99aa4f71-76f1-43ed-885d-e8f25aad549c"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:31:32 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "72"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"detail\": \"Task with id 99aa4f71-76f1-43ed-885d-e8f25aad549c not found\"\n}"
+						},
+						{
+							"name": "204",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/tasks/8e5c52da-8d07-42bb-9e64-7628955bbb81",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"tasks",
+										"8e5c52da-8d07-42bb-9e64-7628955bbb81"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:32:02 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "tasks list",
+			"item": [
+				{
+					"name": "Tasks List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/task-lists/3483bdaf-1245-4134-a9af-1a1ff9673f53",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"task-lists",
+								"3483bdaf-1245-4134-a9af-1a1ff9673f53"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 tasks lists",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 05:54:24 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "1085"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"items\": [\n        {\n            \"name\": \"Task List 001\",\n            \"description\": null,\n            \"id\": \"3483bdaf-1245-4134-a9af-1a1ff9673f53\",\n            \"owner_id\": null,\n            \"is_active\": true,\n            \"created_at\": \"2025-06-24T05:41:05.806708Z\",\n            \"updated_at\": \"2025-06-24T05:41:05.806724Z\"\n        },\n        {\n            \"name\": \"Task List 001\",\n            \"description\": null,\n            \"id\": \"5994ae3b-ade0-4329-86d8-e1e7a1ca0090\",\n            \"owner_id\": null,\n            \"is_active\": true,\n            \"created_at\": \"2025-06-24T05:41:36.324104Z\",\n            \"updated_at\": \"2025-06-24T05:41:36.324118Z\"\n        },\n        {\n            \"name\": \"Task List 001\",\n            \"description\": null,\n            \"id\": \"99aa4f71-76f1-43ed-885d-e8f25aad549c\",\n            \"owner_id\": null,\n            \"is_active\": true,\n            \"created_at\": \"2025-06-24T05:45:17.193849Z\",\n            \"updated_at\": \"2025-06-24T05:45:17.193864Z\"\n        },\n        {\n            \"name\": \"Task List 001\",\n            \"description\": null,\n            \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"owner_id\": null,\n            \"is_active\": true,\n            \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n            \"updated_at\": \"2025-06-24T05:51:46.666640Z\"\n        },\n        {\n            \"name\": \"Task List 001\",\n            \"description\": null,\n            \"id\": \"2a6ce4e9-67f8-4adc-bb9b-d0b6f6f6f543\",\n            \"owner_id\": null,\n            \"is_active\": true,\n            \"created_at\": \"2025-06-24T05:53:12.204542Z\",\n            \"updated_at\": \"2025-06-24T05:53:12.204548Z\"\n        }\n    ],\n    \"page\": 1,\n    \"size\": 20,\n    \"total\": 5,\n    \"pages\": 1\n}"
+						},
+						{
+							"name": "200 task list by uuid",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/3483bdaf-1245-4134-a9af-1a1ff9673f53",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"3483bdaf-1245-4134-a9af-1a1ff9673f53"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 06:35:28 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "310"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List 001\",\n    \"description\": null,\n    \"id\": \"3483bdaf-1245-4134-a9af-1a1ff9673f53\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:41:05.806708Z\",\n    \"updated_at\": \"2025-06-24T05:41:05.806724Z\",\n    \"total_tasks\": 0,\n    \"completed_tasks\": 0,\n    \"pending_tasks\": 0,\n    \"in_progress_tasks\": 0,\n    \"completion_percentage\": 0\n}"
+						}
+					]
+				},
+				{
+					"name": "Task List Tasks",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/task-lists/3483bdaf-1245-4134-a9af-1a1ff9673f53",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"task-lists",
+								"3483bdaf-1245-4134-a9af-1a1ff9673f53"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200 Without tasks",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/3483bdaf-1245-4134-a9af-1a1ff9673f53/tasks",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"3483bdaf-1245-4134-a9af-1a1ff9673f53",
+										"tasks"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:21:33 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "328"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List 001 - v2.1\",\n    \"description\": null,\n    \"id\": \"3483bdaf-1245-4134-a9af-1a1ff9673f53\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:41:05.806708Z\",\n    \"updated_at\": \"2025-06-24T10:05:01.514243Z\",\n    \"total_tasks\": 0,\n    \"completed_tasks\": 0,\n    \"pending_tasks\": 0,\n    \"in_progress_tasks\": 0,\n    \"completion_percentage\": 0,\n    \"tasks\": []\n}"
+						},
+						{
+							"name": "200 With tasks",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/80d208f3-ae4e-4119-9250-7ec3be32dc2e/tasks",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"80d208f3-ae4e-4119-9250-7ec3be32dc2e",
+										"tasks"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 11:10:58 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "1338"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List to be deleted\",\n    \"description\": null,\n    \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n    \"updated_at\": \"2025-06-24T10:39:56.574146Z\",\n    \"total_tasks\": 3,\n    \"completed_tasks\": 1,\n    \"pending_tasks\": 1,\n    \"in_progress_tasks\": 1,\n    \"completion_percentage\": 33.33333333333333,\n    \"tasks\": [\n        {\n            \"title\": \"Task c\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"6d42c2a1-39bb-4108-b4ee-2d1a91f56eb9\",\n            \"status\": \"pending\",\n            \"task_list_id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T10:40:29.770533Z\",\n            \"updated_at\": \"2025-06-24T10:40:29.770539Z\",\n            \"completed_at\": null\n        },\n        {\n            \"title\": \"Task a\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"5c983d92-6696-480f-b17e-39cfa708cd95\",\n            \"status\": \"in_progress\",\n            \"task_list_id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T10:40:22.514066Z\",\n            \"updated_at\": \"2025-06-24T11:09:29.317067Z\",\n            \"completed_at\": null\n        },\n        {\n            \"title\": \"Task d\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"8d464637-0d28-4d20-8421-2e203140a8bd\",\n            \"status\": \"completed\",\n            \"task_list_id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T10:40:32.989169Z\",\n            \"updated_at\": \"2025-06-24T11:10:53.516446Z\",\n            \"completed_at\": \"2025-06-24T11:10:53.516452Z\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "200 status-completed",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/80d208f3-ae4e-4119-9250-7ec3be32dc2e/tasks?status=completed",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"80d208f3-ae4e-4119-9250-7ec3be32dc2e",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "completed"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 11:12:12 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "692"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List to be deleted\",\n    \"description\": null,\n    \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n    \"updated_at\": \"2025-06-24T10:39:56.574146Z\",\n    \"total_tasks\": 3,\n    \"completed_tasks\": 1,\n    \"pending_tasks\": 1,\n    \"in_progress_tasks\": 1,\n    \"completion_percentage\": 33.33333333333333,\n    \"tasks\": [\n        {\n            \"title\": \"Task d\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"8d464637-0d28-4d20-8421-2e203140a8bd\",\n            \"status\": \"completed\",\n            \"task_list_id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T10:40:32.989169Z\",\n            \"updated_at\": \"2025-06-24T11:10:53.516446Z\",\n            \"completed_at\": \"2025-06-24T11:10:53.516452Z\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "200 status-pending",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/80d208f3-ae4e-4119-9250-7ec3be32dc2e/tasks?status=pending",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"80d208f3-ae4e-4119-9250-7ec3be32dc2e",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "pending"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 11:13:09 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "665"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List to be deleted\",\n    \"description\": null,\n    \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n    \"updated_at\": \"2025-06-24T10:39:56.574146Z\",\n    \"total_tasks\": 3,\n    \"completed_tasks\": 1,\n    \"pending_tasks\": 1,\n    \"in_progress_tasks\": 1,\n    \"completion_percentage\": 33.33333333333333,\n    \"tasks\": [\n        {\n            \"title\": \"Task c\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"6d42c2a1-39bb-4108-b4ee-2d1a91f56eb9\",\n            \"status\": \"pending\",\n            \"task_list_id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T10:40:29.770533Z\",\n            \"updated_at\": \"2025-06-24T10:40:29.770539Z\",\n            \"completed_at\": null\n        }\n    ]\n}"
+						},
+						{
+							"name": "200 2 filters",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/80d208f3-ae4e-4119-9250-7ec3be32dc2e/tasks?status=pending&priority=medium",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"80d208f3-ae4e-4119-9250-7ec3be32dc2e",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "pending"
+										},
+										{
+											"key": "priority",
+											"value": "medium"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 11:13:53 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "345"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List to be deleted\",\n    \"description\": null,\n    \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n    \"updated_at\": \"2025-06-24T10:39:56.574146Z\",\n    \"total_tasks\": 3,\n    \"completed_tasks\": 1,\n    \"pending_tasks\": 1,\n    \"in_progress_tasks\": 1,\n    \"completion_percentage\": 33.33333333333333,\n    \"tasks\": []\n}"
+						},
+						{
+							"name": "200 2 filters b",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/80d208f3-ae4e-4119-9250-7ec3be32dc2e/tasks?status=pending&priority=medium",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"80d208f3-ae4e-4119-9250-7ec3be32dc2e",
+										"tasks"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "pending"
+										},
+										{
+											"key": "priority",
+											"value": "medium"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 11:15:13 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "665"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List to be deleted\",\n    \"description\": null,\n    \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n    \"updated_at\": \"2025-06-24T10:39:56.574146Z\",\n    \"total_tasks\": 3,\n    \"completed_tasks\": 1,\n    \"pending_tasks\": 1,\n    \"in_progress_tasks\": 1,\n    \"completion_percentage\": 33.33333333333333,\n    \"tasks\": [\n        {\n            \"title\": \"Task c\",\n            \"description\": null,\n            \"priority\": \"medium\",\n            \"due_date\": null,\n            \"id\": \"6d42c2a1-39bb-4108-b4ee-2d1a91f56eb9\",\n            \"status\": \"pending\",\n            \"task_list_id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n            \"assigned_user_id\": null,\n            \"created_at\": \"2025-06-24T10:40:29.770533Z\",\n            \"updated_at\": \"2025-06-24T10:40:29.770539Z\",\n            \"completed_at\": null\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Task List",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Task List 001\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/task-lists/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"task-lists",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Task List 001\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 05:51:42 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "206"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List 001\",\n    \"description\": null,\n    \"id\": \"80d208f3-ae4e-4119-9250-7ec3be32dc2e\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:51:46.666624Z\",\n    \"updated_at\": \"2025-06-24T05:51:46.666640Z\"\n}"
+						},
+						{
+							"name": "422 name required",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										""
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 05:52:33 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "87"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"detail\": [\n        {\n            \"type\": \"missing\",\n            \"loc\": [\n                \"body\",\n                \"name\"\n            ],\n            \"msg\": \"Field required\",\n            \"input\": {}\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Task List",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Task List 001 - v2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/task-lists/3483bdaf-1245-4134-a9af-1a1ff9673f53",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"task-lists",
+								"3483bdaf-1245-4134-a9af-1a1ff9673f53"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "200",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Task List 001 - v2.1\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/3483bdaf-1245-4134-a9af-1a1ff9673f53",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"3483bdaf-1245-4134-a9af-1a1ff9673f53"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:05:00 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "213"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"Task List 001 - v2.1\",\n    \"description\": null,\n    \"id\": \"3483bdaf-1245-4134-a9af-1a1ff9673f53\",\n    \"owner_id\": null,\n    \"is_active\": true,\n    \"created_at\": \"2025-06-24T05:41:05.806708Z\",\n    \"updated_at\": \"2025-06-24T10:05:01.514243Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Task List",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/task-lists/99aa4f71-76f1-43ed-885d-e8f25aad549c",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"task-lists",
+								"99aa4f71-76f1-43ed-885d-e8f25aad549c"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "404",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/99aa4f71-76f1-43ed-885d-e8f25aad5492",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"99aa4f71-76f1-43ed-885d-e8f25aad5492"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:35:13 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-length",
+									"value": "76"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"detail\": \"TaskList with id 99aa4f71-76f1-43ed-885d-e8f25aad5492 not found\"\n}"
+						},
+						{
+							"name": "204",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1:8000/api/v1/task-lists/99aa4f71-76f1-43ed-885d-e8f25aad549c",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"v1",
+										"task-lists",
+										"99aa4f71-76f1-43ed-885d-e8f25aad549c"
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "date",
+									"value": "Tue, 24 Jun 2025 10:35:38 GMT"
+								},
+								{
+									"key": "server",
+									"value": "uvicorn"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
 		}
 	]
 }

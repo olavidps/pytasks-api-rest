@@ -1,13 +1,18 @@
-"""Task API endpoints."""
+"""Task routes."""
 
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import (
-    get_task_list_repository,
-    get_task_repository,
-    get_user_repository,
+    get_create_task_use_case,
+    get_delete_task_use_case,
+    get_get_task_use_case,
+    get_get_tasks_use_case,
+    get_update_task_assignment_use_case,
+    get_update_task_priority_use_case,
+    get_update_task_status_use_case,
+    get_update_task_use_case,
 )
 from app.api.schemas import (
     PaginatedTaskResponse,
@@ -21,10 +26,20 @@ from app.api.schemas import (
     TaskUpdate,
     TaskWithRelations,
 )
-from app.domain.exceptions.task import TaskNotFoundError
-from app.domain.repositories.task_list_repository import TaskListRepository
-from app.domain.repositories.task_repository import TaskRepository
-from app.domain.repositories.user_repository import UserRepository
+from app.application.use_cases.create_task import CreateTaskUseCase
+from app.application.use_cases.delete_task import DeleteTaskUseCase
+from app.application.use_cases.get_task import GetTaskUseCase
+from app.application.use_cases.get_tasks import GetTasksUseCase
+from app.application.use_cases.update_task import UpdateTaskUseCase
+from app.application.use_cases.update_task_assignment import UpdateTaskAssignmentUseCase
+from app.application.use_cases.update_task_priority import UpdateTaskPriorityUseCase
+from app.application.use_cases.update_task_status import UpdateTaskStatusUseCase
+from app.domain.exceptions import (
+    TaskListNotFoundError,
+    TaskNotFoundError,
+    UserNotFoundError,
+    ValidationError,
+)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -38,44 +53,27 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 )
 async def create_task(
     task_data: TaskCreate,
-    task_repo: TaskRepository = Depends(get_task_repository),
-    task_list_repo: TaskListRepository = Depends(get_task_list_repository),
-    user_repo: UserRepository = Depends(get_user_repository),
+    create_task_use_case: CreateTaskUseCase = Depends(get_create_task_use_case),
 ) -> TaskResponse:
     """Create a new task."""
-    # Verify task list exists
     try:
-        task_list = await task_list_repo.get_by_id(task_data.task_list_id)
-        if not task_list:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task list with id {task_data.task_list_id} not found",
-            )
-    except Exception as e:
+        task = await create_task_use_case.execute(task_data.to_domain())
+        return TaskResponse.model_validate(task)
+    except TaskListNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Task list with id {task_data.task_list_id} not found",
+            detail=str(e),
         ) from e
-
-    # Verify assigned user exists if provided
-    if task_data.assigned_to_id:
-        try:
-            assigned_user = await user_repo.get_by_id(task_data.assigned_to_id)
-            if not assigned_user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"User with id {task_data.assigned_to_id} not found",
-                )
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {task_data.assigned_to_id} not found",
-            ) from e
-
-    # Create task
-    try:
-        task = await task_repo.create(task_data.to_domain())
-        return TaskResponse.from_domain(task)
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -92,7 +90,7 @@ async def create_task(
 async def get_tasks(
     pagination: PaginationParams = Depends(),
     filters: TaskFilterParams = Depends(),
-    task_repo: TaskRepository = Depends(get_task_repository),
+    get_tasks_use_case: GetTasksUseCase = Depends(get_get_tasks_use_case),
 ) -> PaginatedTaskResponse:
     """Get paginated tasks with optional filtering."""
     try:
@@ -114,14 +112,13 @@ async def get_tasks(
             filter_criteria["due_date_to"] = filters.due_date_to
 
         # Get paginated results
-        tasks, total = await task_repo.get_paginated(
-            offset=pagination.offset,
-            limit=pagination.size,
+        tasks, total = await get_tasks_use_case.execute(
+            pagination=pagination,
             filters=filter_criteria,
         )
 
         # Convert to response models
-        task_responses = [TaskResponse.from_domain(task) for task in tasks]
+        task_responses = [TaskResponse.model_validate(task) for task in tasks]
 
         return PaginatedTaskResponse.create(
             items=task_responses,
@@ -144,17 +141,11 @@ async def get_tasks(
 )
 async def get_task(
     task_id: UUID,
-    task_repo: TaskRepository = Depends(get_task_repository),
+    get_task_use_case: GetTaskUseCase = Depends(get_get_task_use_case),
 ) -> TaskWithRelations:
     """Get a specific task by ID."""
     try:
-        task = await task_repo.get_by_id(task_id)
-        if not task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task with id {task_id} not found",
-            )
-        return TaskWithRelations.from_domain(task)
+        return await get_task_use_case.execute(task_id)
     except TaskNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -176,34 +167,32 @@ async def get_task(
 async def update_task(
     task_id: UUID,
     task_data: TaskUpdate,
-    task_repo: TaskRepository = Depends(get_task_repository),
-    user_repo: UserRepository = Depends(get_user_repository),
+    update_task_use_case: UpdateTaskUseCase = Depends(get_update_task_use_case),
+    get_task_use_case: GetTaskUseCase = Depends(get_get_task_use_case),
 ) -> TaskResponse:
     """Update a specific task."""
     try:
-        # Check if task exists
-        existing_task = await task_repo.get_by_id(task_id)
-        if not existing_task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task with id {task_id} not found",
-            )
+        existing_task = await get_task_use_case.execute(task_id)
 
-        # Verify assigned user exists if provided
-        if task_data.assigned_to_id:
-            assigned_user = await user_repo.get_by_id(task_data.assigned_to_id)
-            if not assigned_user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"User with id {task_data.assigned_to_id} not found",
-                )
+        update_data = task_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(existing_task, key, value)
 
-        # Update task
-        updated_task = await task_repo.update(task_id, task_data.to_domain_dict())
-        return TaskResponse.from_domain(updated_task)
+        updated_task = await update_task_use_case.execute(task_id, existing_task)
+        return TaskResponse.model_validate(updated_task)
     except TaskNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         ) from e
     except Exception as e:
@@ -222,24 +211,24 @@ async def update_task(
 async def update_task_status(
     task_id: UUID,
     status_data: TaskStatusUpdate,
-    task_repo: TaskRepository = Depends(get_task_repository),
+    update_task_status_use_case: UpdateTaskStatusUseCase = Depends(
+        get_update_task_status_use_case
+    ),
 ) -> TaskResponse:
     """Update task status."""
     try:
-        # Check if task exists
-        existing_task = await task_repo.get_by_id(task_id)
-        if not existing_task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task with id {task_id} not found",
-            )
-
-        # Update task status
-        updated_task = await task_repo.update(task_id, {"status": status_data.status})
-        return TaskResponse.from_domain(updated_task)
+        updated_task = await update_task_status_use_case.execute(
+            task_id, status_data.status
+        )
+        return TaskResponse.model_validate(updated_task)
     except TaskNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         ) from e
     except Exception as e:
@@ -258,26 +247,24 @@ async def update_task_status(
 async def update_task_priority(
     task_id: UUID,
     priority_data: TaskPriorityUpdate,
-    task_repo: TaskRepository = Depends(get_task_repository),
+    update_task_priority_use_case: UpdateTaskPriorityUseCase = Depends(
+        get_update_task_priority_use_case
+    ),
 ) -> TaskResponse:
     """Update task priority."""
     try:
-        # Check if task exists
-        existing_task = await task_repo.get_by_id(task_id)
-        if not existing_task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task with id {task_id} not found",
-            )
-
-        # Update task priority
-        updated_task = await task_repo.update(
-            task_id, {"priority": priority_data.priority}
+        updated_task = await update_task_priority_use_case.execute(
+            task_id, priority_data.priority
         )
-        return TaskResponse.from_domain(updated_task)
+        return TaskResponse.model_validate(updated_task)
     except TaskNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         ) from e
     except Exception as e:
@@ -296,36 +283,29 @@ async def update_task_priority(
 async def update_task_assignment(
     task_id: UUID,
     assignment_data: TaskAssignmentUpdate,
-    task_repo: TaskRepository = Depends(get_task_repository),
-    user_repo: UserRepository = Depends(get_user_repository),
+    update_task_assignment_use_case: UpdateTaskAssignmentUseCase = Depends(
+        get_update_task_assignment_use_case
+    ),
 ) -> TaskResponse:
     """Update task assignment."""
     try:
-        # Check if task exists
-        existing_task = await task_repo.get_by_id(task_id)
-        if not existing_task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task with id {task_id} not found",
-            )
-
-        # Verify assigned user exists if provided
-        if assignment_data.assigned_to_id:
-            assigned_user = await user_repo.get_by_id(assignment_data.assigned_to_id)
-            if not assigned_user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"User with id {assignment_data.assigned_to_id} not found",
-                )
-
-        # Update task assignment
-        updated_task = await task_repo.update(
-            task_id, {"assigned_to_id": assignment_data.assigned_to_id}
+        updated_task = await update_task_assignment_use_case.execute(
+            task_id, assignment_data.assigned_to_id
         )
-        return TaskResponse.from_domain(updated_task)
+        return TaskResponse.model_validate(updated_task)
     except TaskNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except UserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         ) from e
     except Exception as e:
@@ -343,23 +323,19 @@ async def update_task_assignment(
 )
 async def delete_task(
     task_id: UUID,
-    task_repo: TaskRepository = Depends(get_task_repository),
+    delete_task_use_case: DeleteTaskUseCase = Depends(get_delete_task_use_case),
 ) -> None:
     """Delete a specific task."""
     try:
-        # Check if task exists
-        existing_task = await task_repo.get_by_id(task_id)
-        if not existing_task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Task with id {task_id} not found",
-            )
-
-        # Delete task
-        await task_repo.delete(task_id)
+        await delete_task_use_case.execute(task_id)
     except TaskNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         ) from e
     except Exception as e:

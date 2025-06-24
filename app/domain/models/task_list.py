@@ -1,10 +1,12 @@
 """TaskList domain model."""
 
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.domain.models.task import Task
 
 
 class TaskList(BaseModel):
@@ -15,10 +17,11 @@ class TaskList(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
-    owner_id: UUID
+    owner_id: Optional[UUID] = Field(None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     is_active: bool = Field(default=True)
+    tasks: List[Task] = Field(default_factory=list)
 
     def update_details(
         self, name: Optional[str] = None, description: Optional[str] = None

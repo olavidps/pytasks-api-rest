@@ -6,26 +6,24 @@ focusing purely on HTTP behavior and response validation.
 
 import uuid
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
-import pytest
-from fastapi import FastAPI, status
+from fastapi import status
 from fastapi.testclient import TestClient
 
-from app.domain.models.user import User
+from app.api.dependencies import (
+    get_create_user_use_case,
+    get_delete_user_use_case,
+    get_get_user_use_case,
+    get_get_users_use_case,
+    get_update_user_use_case,
+)
 from app.domain.exceptions.user import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
+from app.domain.models.user import User
 from app.main import app
-from app.api.dependencies import (
-    get_create_user_use_case,
-    get_get_user_use_case,
-    get_get_users_use_case,
-    get_update_user_use_case,
-    get_delete_user_use_case,
-)
-
 
 # Create global mock instances
 mock_create_user_use_case = AsyncMock()
@@ -34,20 +32,30 @@ mock_get_users_use_case = AsyncMock()
 mock_update_user_use_case = AsyncMock()
 mock_delete_user_use_case = AsyncMock()
 
+
 # Mock dependency functions
 def get_mock_create_user_use_case():
+    """Return mock create user use case."""
     return mock_create_user_use_case
 
+
 def get_mock_get_user_use_case():
+    """Return mock get user use case."""
     return mock_get_user_use_case
 
+
 def get_mock_get_users_use_case():
+    """Return mock get users use case."""
     return mock_get_users_use_case
 
+
 def get_mock_update_user_use_case():
+    """Return mock update user use case."""
     return mock_update_user_use_case
 
+
 def get_mock_delete_user_use_case():
+    """Return mock delete user use case."""
     return mock_delete_user_use_case
 
 
@@ -70,7 +78,7 @@ class TestCreateUserEndpoint:
             "username": "newuser",
             "full_name": "New User",
         }
-        
+
         created_user = User(
             id=uuid.uuid4(),
             email=user_data["email"],
@@ -80,7 +88,7 @@ class TestCreateUserEndpoint:
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
-        
+
         # Mock the use case through dependency override
         mock_create_user_use_case.execute.return_value = created_user
 
@@ -108,7 +116,7 @@ class TestCreateUserEndpoint:
             "username": "newuser",
             "full_name": "New User",
         }
-        
+
         # Mock the use case through dependency override
         mock_create_user_use_case.execute.side_effect = UserAlreadyExistsError(
             "email", "newuser@example.com"
@@ -132,7 +140,7 @@ class TestCreateUserEndpoint:
             "username": "existinguser",
             "full_name": "New User",
         }
-        
+
         # Mock the use case through dependency override
         mock_create_user_use_case.execute.side_effect = UserAlreadyExistsError(
             "username", "newuser"
@@ -199,7 +207,7 @@ class TestGetUserEndpoint:
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
-        
+
         # Mock the use case through dependency override
         mock_get_user_use_case.execute.return_value = user
 
@@ -221,9 +229,7 @@ class TestGetUserEndpoint:
         # Arrange
         user_id = uuid.uuid4()
         # Mock the use case through dependency override
-        mock_get_user_use_case.execute.side_effect = UserNotFoundError(
-            user_id
-        )
+        mock_get_user_use_case.execute.side_effect = UserNotFoundError(user_id)
 
         # Act
         with TestClient(app) as client:
@@ -268,7 +274,7 @@ class TestGetUsersEndpoint:
             for i in range(3)
         ]
         total = 3
-        
+
         # Mock the use case through dependency override
         mock_get_users_use_case.execute.return_value = (users, total)
 
@@ -305,7 +311,7 @@ class TestGetUsersEndpoint:
             for i in range(2)
         ]
         total = 10
-        
+
         # Mock the use case through dependency override
         mock_get_users_use_case.execute.return_value = (users, total)
 
@@ -334,7 +340,7 @@ class TestUpdateUserEndpoint:
             "username": "updateduser",
             "full_name": "Updated User",
         }
-        
+
         updated_user = User(
             id=user_id,
             email=update_data["email"],
@@ -344,7 +350,7 @@ class TestUpdateUserEndpoint:
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
-        
+
         # Mock the use case through dependency override
         mock_update_user_use_case.execute.return_value = updated_user
 
@@ -365,11 +371,9 @@ class TestUpdateUserEndpoint:
         # Arrange
         user_id = uuid.uuid4()
         update_data = {"email": "updated@example.com"}
-        
+
         # Mock the use case through dependency override
-        mock_update_user_use_case.execute.side_effect = UserNotFoundError(
-            user_id
-        )
+        mock_update_user_use_case.execute.side_effect = UserNotFoundError(user_id)
 
         # Act
         with TestClient(app) as client:
@@ -403,9 +407,7 @@ class TestDeleteUserEndpoint:
         # Arrange
         user_id = uuid.uuid4()
         # Mock the use case through dependency override
-        mock_delete_user_use_case.execute.side_effect = UserNotFoundError(
-            user_id
-        )
+        mock_delete_user_use_case.execute.side_effect = UserNotFoundError(user_id)
 
         # Act
         with TestClient(app) as client:

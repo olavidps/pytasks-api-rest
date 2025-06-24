@@ -4,15 +4,14 @@ import os
 from typing import AsyncGenerator
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncEngine
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-from sqlalchemy import text
 
 from app.config import get_settings
-from app.infrastructure.database.connection import Base, get_db_session
+from app.infrastructure.database.connection import get_db_session
 from app.main import app
 
 # Set test environment
@@ -35,9 +34,9 @@ def database_url() -> str:
 async def engine(database_url: str) -> AsyncGenerator[AsyncEngine, None]:
     """Create a database engine for testing."""
     engine = create_async_engine(
-        database_url, 
+        database_url,
         echo=True,
-        poolclass=NullPool  # Prevents concurrent session conflicts
+        poolclass=NullPool,  # Prevents concurrent session conflicts
     )
     yield engine
     await engine.dispose()
@@ -52,7 +51,9 @@ async def setup_database(engine: AsyncEngine) -> AsyncGenerator[None, None]:
 
 
 @pytest.fixture(scope="function")
-async def db_session(engine: AsyncEngine, setup_database: None) -> AsyncGenerator[AsyncSession, None]:
+async def db_session(
+    engine: AsyncEngine, setup_database: None
+) -> AsyncGenerator[AsyncSession, None]:
     """Create a clean database session for testing."""
     async_session_factory = sessionmaker(
         bind=engine,
@@ -64,9 +65,9 @@ async def db_session(engine: AsyncEngine, setup_database: None) -> AsyncGenerato
         # Clean database before each test
         await session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
         await session.commit()
-        
+
         yield session
-        
+
         # Clean up after each test
         await session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
         await session.commit()

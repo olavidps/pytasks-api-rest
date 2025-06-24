@@ -33,7 +33,7 @@ class TaskListRepository(ABC):
         """
 
     @abstractmethod
-    async def update(self, task_list: TaskList) -> TaskList:
+    async def update(self, task_list_id: UUID, task_list: TaskList) -> TaskList:
         """Update task list.
 
         Args:
@@ -59,7 +59,11 @@ class TaskListRepository(ABC):
 
     @abstractmethod
     async def get_by_owner_id(
-        self, owner_id: UUID, is_active: bool = True, skip: int = 0, limit: int = 100
+        self,
+        owner_id: Optional[UUID],
+        is_active: bool = True,
+        skip: int = 0,
+        limit: int = 100,
     ) -> List[TaskList]:
         """Get task lists by owner id.
 
@@ -82,4 +86,22 @@ class TaskListRepository(ABC):
 
         Returns:
             True if task list exists, False otherwise
+        """
+
+    @abstractmethod
+    async def get_paginated(
+        self,
+        offset: int = 0,
+        limit: int = 100,
+        filters: Optional[dict] = None,
+    ) -> tuple[List[TaskList], int]:
+        """Get paginated task lists with optional filters.
+
+        Args:
+            offset: Number of records to skip
+            limit: Maximum number of records to return
+            filters: Optional filters to apply
+
+        Returns:
+            Tuple containing list of task lists and total count
         """

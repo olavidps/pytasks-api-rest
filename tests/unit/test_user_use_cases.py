@@ -196,9 +196,7 @@ class TestGetUsersUseCase:
         ]
 
         total_count = 2
-        expected_response = PaginatedResponse(
-            items=users, page=1, size=20, total=total_count, pages=1
-        )
+        _ = PaginatedResponse(items=users, page=1, size=20, total=total_count, pages=1)
 
         mock_user_repository.get_paginated.return_value = (users, total_count)
 

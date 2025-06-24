@@ -1,7 +1,8 @@
-"""Fixtures for API tests using mocks.
+"""Fixtures for API testing.
 
 This module provides fixtures for testing API endpoints using mocks
-instead of real database connections, improving test speed and reliability."""
+instead of real database connections, improving test speed and reliability.
+"""
 
 from unittest.mock import AsyncMock
 
@@ -9,16 +10,16 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from app.main import app
 from app.api.dependencies import (
+    get_activate_user_use_case,
     get_create_user_use_case,
+    get_deactivate_user_use_case,
+    get_delete_user_use_case,
     get_get_user_use_case,
     get_get_users_use_case,
     get_update_user_use_case,
-    get_delete_user_use_case,
-    get_activate_user_use_case,
-    get_deactivate_user_use_case,
 )
+from app.main import app
 
 
 @pytest.fixture

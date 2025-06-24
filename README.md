@@ -39,6 +39,7 @@ A clean and modern task management API built with FastAPI, following clean archi
 - **Git Hooks**: pre-commit for automated quality checks
 - **Docker**: For consistent development and deployment environments
 - **Makefile**: Simple command interface for common development tasks
+- **API Testing**: Postman collection with example requests for all main endpoints
 
 ## 🚀 Development Phases
 
@@ -182,10 +183,13 @@ The infrastructure layer implements the repository pattern using SQLAlchemy ORM:
 - [x] SQLAlchemy models with relationships and constraints
 - [x] Repository pattern implementation
 
-### Phase 4: API Layer
+### Phase 4: API Layer ✅
 
-- [ ] FastAPI routes and schemas
-- [ ] Error handling middleware
+- [x] FastAPI routes and schemas
+- [x] Error handling middleware
+- [x] Task and TaskList domain services
+- [x] Database migrations for nullable owner_id
+- [x] Enhanced test infrastructure with mocked endpoints
 
 ### Phase 5: Testing & Quality
 
@@ -426,6 +430,28 @@ make test-watch
 - **Fast Unit Tests**: Unit tests run without database overhead
 - **Clear Separation**: Distinct test categories for different purposes
 - **No Manual Setup**: No need to run separate database setup commands
+
+### API Testing with Postman
+
+The project includes a comprehensive Postman collection (`API.postman_collection.json`) with example requests for all main API endpoints.
+
+**Features:**
+- Pre-configured requests for all CRUD operations
+- Example payloads for creating and updating resources
+- Authentication examples (when implemented)
+- Environment variables for easy endpoint management
+
+**Usage:**
+1. Import `API.postman_collection.json` into Postman
+2. Set up environment variables (base URL: `http://localhost:8000`)
+3. Start the development server with `make dev`
+4. Test endpoints directly from Postman interface
+
+**Available Endpoints:**
+- User management (CRUD operations)
+- Task list management
+- Task operations with filtering
+- Authentication flows (when implemented)
 
 ### Docker
 

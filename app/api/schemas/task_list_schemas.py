@@ -1,13 +1,16 @@
 """TaskList API schemas for requests and responses."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 from .common_schemas import PaginatedResponse
 from .user_schemas import UserSummary
+
+if TYPE_CHECKING:
+    from .task_schemas import TaskResponse
 
 
 class TaskListBase(BaseModel):
@@ -22,7 +25,7 @@ class TaskListBase(BaseModel):
 class TaskListCreate(TaskListBase):
     """Schema for creating a new task list."""
 
-    pass  # Inherits all fields from TaskListBase
+    owner_id: Optional[UUID] = Field(default=None)
 
 
 class TaskListUpdate(BaseModel):
@@ -34,13 +37,16 @@ class TaskListUpdate(BaseModel):
     description: Optional[str] = Field(
         None, max_length=500, description="New task list description"
     )
+    owner_id: Optional[UUID] = Field(default=None)
+    is_active: Optional[bool] = Field(default=True)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TaskListResponse(TaskListBase):
     """Schema for task list response data."""
 
     id: UUID = Field(..., description="Task list unique identifier")
-    owner_id: UUID = Field(..., description="Owner user ID")
+    owner_id: Optional[UUID] = Field(None, description="Owner user ID")
     is_active: bool = Field(..., description="Whether task list is active")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
@@ -79,6 +85,14 @@ class TaskListSummary(BaseModel):
         """Pydantic configuration."""
 
         from_attributes = True
+
+
+class TaskListTasksResponse(TaskListWithStats):
+    """Task list response with tasks and statistics."""
+
+    tasks: List["TaskResponse"] = Field(
+        ..., description="List of tasks in the task list"
+    )
 
 
 # Type alias for paginated task list response

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.domain.models.task import TaskPriority, TaskStatus
+from app.domain.models.task import Task, TaskPriority, TaskStatus
 
 from .common_schemas import PaginatedResponse
 from .task_list_schemas import TaskListSummary
@@ -36,6 +36,17 @@ class TaskCreate(TaskBase):
         None, description="ID of the assigned user"
     )
 
+    def to_domain(self) -> Task:
+        """Convert the Pydantic model to a domain Task model."""
+        return Task(
+            title=self.title,
+            description=self.description,
+            priority=self.priority,
+            due_date=self.due_date,
+            task_list_id=self.task_list_id,
+            assigned_user_id=self.assigned_user_id,
+        )
+
 
 class TaskUpdate(BaseModel):
     """Schema for updating a task."""
@@ -49,6 +60,16 @@ class TaskUpdate(BaseModel):
     priority: Optional[TaskPriority] = Field(None, description="New task priority")
     due_date: Optional[datetime] = Field(None, description="New task due date")
     assigned_user_id: Optional[UUID] = Field(None, description="New assigned user ID")
+
+    def to_domain(self) -> Task:
+        """Convert the Pydantic model to a domain Task model."""
+        return Task(
+            title=self.title,
+            description=self.description,
+            priority=self.priority,
+            due_date=self.due_date,
+            assigned_user_id=self.assigned_user_id,
+        )
 
 
 class TaskStatusUpdate(BaseModel):

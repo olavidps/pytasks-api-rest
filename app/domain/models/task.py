@@ -116,6 +116,35 @@ class Task(BaseModel):
             }
         )
 
+    def update_priority(self, priority: TaskPriority) -> "Task":
+        """Update task priority.
+
+        Args:
+            priority: New priority for the task
+
+        Returns:
+            Updated Task instance with new priority
+        """
+        return self.model_copy(
+            update={
+                "priority": priority,
+                "updated_at": datetime.now(timezone.utc),
+            }
+        )
+
+    def unassign(self) -> "Task":
+        """Unassign task from any user.
+
+        Returns:
+            Updated Task instance with no assignee
+        """
+        return self.model_copy(
+            update={
+                "assigned_user_id": None,
+                "updated_at": datetime.now(timezone.utc),
+            }
+        )
+
     def update_details(
         self,
         title: Optional[str] = None,
