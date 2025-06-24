@@ -175,8 +175,29 @@ async def update_task(
         existing_task = await get_task_use_case.execute(task_id)
 
         update_data = task_data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(existing_task, key, value)
+
+        # Handle specific update methods for immutable Task model
+        if (
+            "title" in update_data
+            or "description" in update_data
+            or "due_date" in update_data
+        ):
+            existing_task = existing_task.update_details(
+                title=update_data.get("title"),
+                description=update_data.get("description"),
+                due_date=update_data.get("due_date"),
+            )
+
+        if "priority" in update_data:
+            existing_task = existing_task.change_priority(update_data["priority"])
+
+        if "assigned_user_id" in update_data:
+            if update_data["assigned_user_id"] is None:
+                existing_task = existing_task.unassign()
+            else:
+                existing_task = existing_task.assign_to_user(
+                    update_data["assigned_user_id"]
+                )
 
         updated_task = await update_task_use_case.execute(task_id, existing_task)
         return TaskResponse.model_validate(updated_task)

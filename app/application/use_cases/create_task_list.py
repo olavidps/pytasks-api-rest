@@ -1,6 +1,5 @@
 """Create task list use case module."""
 
-
 from app.api.schemas import TaskListCreate
 from app.application.services.task_list_validation_service import (
     TaskListValidationService,

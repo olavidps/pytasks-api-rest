@@ -172,3 +172,38 @@ This file tracks key decisions made during development.
 - Improved test configuration and fixtures for better isolation
 
 **Why**: Integration tests are slow but thorough, mocked tests are fast but limited. Need both for the testing pyramid - fast feedback during development, confidence in real scenarios.
+
+## 9. Next Steps and Authentication Strategy
+
+### Authentication Library Selection
+
+**Decision**: Use python-jose + passlib for JWT authentication
+
+- `python-jose[cryptography]` for JWT token handling
+- `passlib[bcrypt]` for secure password hashing
+- `python-multipart` for form data support
+
+**Why**: python-jose is mature, well-maintained, and FastAPI-recommended. Bcrypt is industry standard for password hashing. Avoids reinventing security wheels.
+
+### Incremental Authentication Implementation
+
+**Decision**: Implement authentication in 5 weekly phases
+
+1. **Week 1**: Password security foundation
+2. **Week 2**: JWT token system
+3. **Week 3**: Auth endpoints (register/login/refresh/logout)
+4. **Week 4**: Route protection middleware
+5. **Week 5**: Role-based access control
+
+**Why**: Incremental approach reduces risk. Each week delivers working functionality. Allows testing and feedback at each stage. Prevents big-bang integration issues.
+
+### Security-First Approach
+
+**Decision**: Prioritize security over convenience in authentication design
+
+- Secure password requirements from day one
+- Short-lived access tokens with refresh mechanism
+- Proper token invalidation on logout
+- Resource ownership validation
+
+**Why**: Security bugs are expensive to fix later. Better to start strict and relax if needed. User trust is critical for task management apps.

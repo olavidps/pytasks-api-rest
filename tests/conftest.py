@@ -63,13 +63,17 @@ async def db_session(
 
     async with async_session_factory() as session:
         # Clean database before each test
-        await session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+        await session.execute(
+            text("TRUNCATE TABLE tasks, task_lists, users RESTART IDENTITY CASCADE")
+        )
         await session.commit()
 
         yield session
 
         # Clean up after each test
-        await session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+        await session.execute(
+            text("TRUNCATE TABLE tasks, task_lists, users RESTART IDENTITY CASCADE")
+        )
         await session.commit()
 
 
@@ -85,4 +89,6 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
-    app.dependency_overrides.clear()
+    # Only clear the database session override, not all overrides
+    if get_db_session in app.dependency_overrides:
+        del app.dependency_overrides[get_db_session]
